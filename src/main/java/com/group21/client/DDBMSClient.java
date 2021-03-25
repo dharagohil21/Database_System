@@ -1,17 +1,17 @@
 package com.group21.client;
 
-import java.io.Console;
 import java.util.Scanner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.group21.server.Authentication;
+import com.group21.server.authentication.Authentication;
+import com.group21.server.processor.QueryProcessor;
 import com.group21.utils.RegexUtil;
 
 public class DDBMSClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(DDBMSClient.class);
-    
+
     public static void main(String[] args) {
         LOGGER.info("   .-----------------------------.                  ");
         LOGGER.info("   |  Welcome to Group 21 DDBMS  |                  ");
@@ -22,6 +22,8 @@ public class DDBMSClient {
         LOGGER.info("                  '---------------- (O.O)           ");
         LOGGER.info("                                    (> <)           ");
         LOGGER.info("");
+
+        DDBMSSetup.perform();
 
         Scanner scanner = new Scanner(System.in);
 
@@ -35,12 +37,13 @@ public class DDBMSClient {
         boolean isValidUser = authentication.login(username, password);
 
         if (!isValidUser) {
+            LOGGER.error("Invalid username or password.");
             return;
         }
 
         LOGGER.info("");
 
-        while(true) {
+        while (true) {
             try {
                 LOGGER.info("DDBMS>>");
 
@@ -63,6 +66,7 @@ public class DDBMSClient {
                         LOGGER.info("\tsqldump <DATABASE_NAME>  - To get table structure DDLs");
                         LOGGER.info("\terd <DATABASE_NAME>      - To get Textual ER Diagram");
                         LOGGER.info("\tValid SQL Query          - To execute valid SQL queries");
+                        LOGGER.info("\texit                     - To exit DDBMS client");
                         break;
                     case "sqldump":
                         LOGGER.info("SQL Dump for databse - {} exported successfully.", RegexUtil.getMatch(userInput, "[^sqldump ][^\\s?]+"));
@@ -73,7 +77,7 @@ public class DDBMSClient {
                     case "exit":
                         return;
                     default:
-                        LOGGER.info("Query - {} executed successfully.", command);
+                        QueryProcessor.process(command);
                         break;
                 }
                 LOGGER.info("");
