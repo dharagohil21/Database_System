@@ -2,6 +2,7 @@
 nbactions\.xml
 
 logs/
+DDBMS_21_Data/
 
 *.class
 
