@@ -89,7 +89,9 @@ public class FileWriter {
             tableInfoJoiner.add(String.valueOf(tableInfo.getNumberOfRows()));
             tableInfoJoiner.add(String.valueOf(tableInfo.getCreatedOn()));
 
-            Files.write(localDDFilePath, tableInfoJoiner.toString().getBytes(), StandardOpenOption.APPEND);
+            String tableInfoDetails = tableInfoJoiner.toString() + ApplicationConfiguration.NEW_LINE;
+
+            Files.write(localDDFilePath, tableInfoDetails.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException exception) {
             LOGGER.error("Error occurred while writing to local data dictionary.");
         }
