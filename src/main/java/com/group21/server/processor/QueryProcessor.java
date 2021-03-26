@@ -2,6 +2,7 @@ package com.group21.server.processor;
 
 import java.util.Date;
 
+import com.group21.server.queries.insert.InsertQueryExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,10 @@ public class QueryProcessor {
             case CREATE:
                 CreateTableQueryExecutor executor = new CreateTableQueryExecutor();
                 executor.execute(query);
+                break;
+            case INSERT:
+                InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor();
+                insertQueryExecutor.execute(query);
                 break;
             case DROP:
                 break;
