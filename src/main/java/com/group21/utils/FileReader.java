@@ -72,4 +72,23 @@ public class FileReader {
         }
         return tableInfoList;
     }
+
+    public static List<String>  readMetadata(String tableName) {
+        String metadataFileName = tableName + ApplicationConfiguration.METADATA_FILE_FORMAT;
+        Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + metadataFileName);
+        List<String> fileLines = null;
+        List<String> columnNames = new ArrayList<>();
+        try {
+            fileLines = Files.readAllLines(localDDFilePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        fileLines.remove(0);
+
+        for (String line : fileLines) {
+            String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+            columnNames.add(columnList[0]);
+        }
+        return columnNames;
+    }
 }
