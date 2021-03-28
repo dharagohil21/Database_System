@@ -15,6 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.models.Column;
+import com.group21.server.models.Constraint;
+import com.group21.server.models.DataType;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
 
@@ -91,5 +94,59 @@ public class FileReader {
             LOGGER.error("Error occurred while reading distributed data dictionary.");
         }
         return tableInfoMap;
+    }
+
+    public static List<Column> readMetadata(String tableName) {
+        List<Column> columnInfoList = new ArrayList<>();
+        try {
+            Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.METADATA_FILE_FORMAT);
+            List<String> fileLines = Files.readAllLines(localDDFilePath);
+            fileLines.remove(0);
+
+            for (String line : fileLines) {
+                String[] columnInfo = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+                Column column = new Column();
+                column.setColumnName(columnInfo[0]);
+                column.setColumnType(DataType.valueOf(columnInfo[1]));
+                column.setConstraint(Constraint.valueOf(columnInfo[2]));
+                column.setForeignKeyTable(columnInfo[3]);
+                column.setForeignKeyColumnName(columnInfo[4]);
+
+                columnInfoList.add(column);
+            }
+        } catch (IOException exception) {
+            LOGGER.error("Error occurred while reading metadata.");
+        }
+        return columnInfoList;
+    }
+
+    public static List<String> readColumnData(String tableName, String columnName) {
+        List<String> columnDataList = new ArrayList<>();
+        try {
+            Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT);
+            List<String> fileLines = Files.readAllLines(localDDFilePath);
+
+            int index = 0;
+            String firstLine = fileLines.get(0);
+            String[] firstLineArray = firstLine.split(ApplicationConfiguration.DELIMITER_REGEX);
+
+            for (int i = 0; i < firstLineArray.length; i++) {
+                if (columnName.equals(firstLineArray[i])) {
+                    index = i;
+                    break;
+                }
+            }
+
+            fileLines.remove(0);
+
+            for (String line : fileLines) {
+                String[] columnData = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+                columnDataList.add(columnData[index]);
+            }
+
+        } catch (IOException exception) {
+            LOGGER.error("Error occurred while reading column data.");
+        }
+        return columnDataList;
     }
 }

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.group21.server.models.QueryType;
 import com.group21.server.queries.createtable.CreateTableQueryExecutor;
+import com.group21.server.queries.insert.InsertQueryExecutor;
 
 public class QueryProcessor {
 
@@ -26,6 +27,10 @@ public class QueryProcessor {
             case CREATE:
                 CreateTableQueryExecutor executor = new CreateTableQueryExecutor();
                 executor.execute(query);
+                break;
+            case INSERT:
+                InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor();
+                insertQueryExecutor.execute(query);
                 break;
             case DROP:
                 break;
