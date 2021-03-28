@@ -63,8 +63,8 @@ public class DeleteParser
         } catch (IOException e) {
             e.printStackTrace();
         }
-        FileReader.readMetadata(tableInfo.getTableName());
-        FileWriter.writeData(tableInfo.getTableName(),FileReader.readMetadata(tableInfo.getTableName()));
+        FileReader.readColumnMetadata(tableInfo.getTableName());
+        FileWriter.writeData(tableInfo.getTableName(),FileReader.readColumnMetadata(tableInfo.getTableName()));
         LOGGER.info("Delete query executed successfully!");
         return true;
     }
