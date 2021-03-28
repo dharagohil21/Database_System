@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
 
 public class FileReader {
@@ -71,5 +72,24 @@ public class FileReader {
             LOGGER.error("Error occurred while reading local data dictionary.");
         }
         return tableInfoList;
+    }
+
+    public static Map<String, DatabaseSite> readDistributedDataDictionary() {
+        Map<String, DatabaseSite> tableInfoMap = new HashMap<>();
+        try {
+            RemoteDatabaseReader.syncDistributedDataDictionary();
+            Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.DISTRIBUTED_DATA_DICTIONARY_NAME);
+            List<String> fileLines = Files.readAllLines(localDDFilePath);
+            fileLines.remove(0);
+
+            for (String line : fileLines) {
+                String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+
+                tableInfoMap.put(columnList[0], DatabaseSite.from(columnList[1]));
+            }
+        } catch (IOException exception) {
+            LOGGER.error("Error occurred while reading distributed data dictionary.");
+        }
+        return tableInfoMap;
     }
 }
