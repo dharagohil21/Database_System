@@ -16,7 +16,7 @@ public class CreateTableParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CreateTableParser.class);
 
-    private static final String CREATE_TABLE_REGEX = "^CREATE TABLE [a-zA-Z_]* \\(.*\\);?$";
+    private static final String CREATE_TABLE_REGEX = "^CREATE TABLE [a-zA-Z_]* (NODE (LOCAL|REMOTE) )?\\(.*\\);?$";
     private static final String VALID_COLUMN_SYNTAX_REGEX = "^[a-zA-Z_]* %s$";
 
     public boolean isValid(String query) {
@@ -69,7 +69,19 @@ public class CreateTableParser {
         int indexOfSecondSpace = query.indexOf(' ', indexOfFirstSpace + 1);
         int indexOfThirdSpace = query.indexOf(' ', indexOfSecondSpace + 1);
 
-        return query.substring(indexOfSecondSpace + 1, indexOfThirdSpace);
+        return query.substring(indexOfSecondSpace + 1, indexOfThirdSpace).trim();
+    }
+
+    public String getDatabaseSite(String query) {
+        int indexOfNode = query.indexOf("NODE");
+        if (indexOfNode == -1) {
+            return "LOCAL";
+        }
+
+        int indexOfSpaceAfterNode = query.indexOf(' ', indexOfNode + 1);
+        int indexOfSecondSpaceAfterNode = query.indexOf(' ', indexOfSpaceAfterNode + 1);
+
+        return query.substring(indexOfSpaceAfterNode + 1, indexOfSecondSpaceAfterNode).trim();
     }
 
     public List<Column> getColumns(String query) {

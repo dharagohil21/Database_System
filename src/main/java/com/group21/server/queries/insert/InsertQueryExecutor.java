@@ -1,15 +1,10 @@
 package com.group21.server.queries.insert;
 
-import com.group21.utils.FileWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 
+import com.group21.utils.FileWriter;
 
 public class InsertQueryExecutor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(InsertQueryExecutor.class);
 
     private final InsertParser insertParser;
 

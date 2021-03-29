@@ -1,5 +1,15 @@
 package com.group21.server.queries.insert;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
 import com.group21.server.models.DataType;
@@ -7,16 +17,10 @@ import com.group21.server.models.TableInfo;
 import com.group21.server.queries.createtable.CreateTableParser;
 import com.group21.utils.FileReader;
 import com.group21.utils.RegexUtil;
-import org.apache.logging.log4j.util.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
-
 
 public class InsertParser {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CreateTableParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InsertParser.class);
 
     private static final String INSERT_REGEX_TYPE1 = "^INSERT INTO [a-zA-Z_]* \\(.*\\) VALUES \\(.*\\);?$";
     private static final String INSERT_REGEX_TYPE2 = "^INSERT INTO [a-zA-Z_]* VALUES \\(.*\\);?$";
@@ -117,7 +121,6 @@ public class InsertParser {
         return checkConstraints(tableName, columnNameArray, columnValueArray);
     }
 
-
     private boolean checkConstraints(String tableName, String[] columnNameArray, String[] columnValueArray) {
 
         int columnLength = columnNameArray.length;
@@ -186,13 +189,11 @@ public class InsertParser {
         return true;
     }
 
-
     public String getTableName(String query) {
         int tableNameStartIndex = query.indexOf("INTO") + 5;
-        int tableNameEndIndex = query.indexOf(" ", tableNameStartIndex);
+        int tableNameEndIndex = query.indexOf(' ', tableNameStartIndex);
         return query.substring(tableNameStartIndex, tableNameEndIndex);
     }
-
 
     public List<String> getColumnValues(String query, String tableName) {
         String matchedQueryType2 = RegexUtil.getMatch(query, INSERT_REGEX_TYPE2);

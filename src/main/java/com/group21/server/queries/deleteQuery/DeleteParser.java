@@ -2,7 +2,6 @@ package com.group21.server.queries.deleteQuery;
 
 import com.group21.configurations.ApplicationConfiguration;
 import com.group21.server.models.TableInfo;
-import com.group21.server.queries.insert.InsertParser;
 import com.group21.utils.FileReader;
 import com.group21.utils.FileWriter;
 import com.group21.utils.RegexUtil;
@@ -16,7 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class DeleteParser
@@ -72,7 +70,7 @@ public class DeleteParser
             if(!FileReader.checkForeignKeyConstraints(tableInfo.getTableName(),uniqueIds))
             {
                 Files.delete(localDDFilePath);
-                System.out.println("no const!");
+                //No Constraints
                 FileReader.readColumnMetadata(tableInfo.getTableName());
                 FileWriter.writeData(tableInfo.getTableName(),FileReader.readColumnMetadata(tableInfo.getTableName()));
                 LOGGER.info("Delete executed successfully!");
@@ -141,7 +139,7 @@ public class DeleteParser
                 {
                     Files.delete(localDDFilePath);
                     FileWriter.writeData(tableInfo.getTableName(),FileReader.readColumnMetadata(tableInfo.getTableName()));
-                    System.out.println("No const");
+                    //No Constraints
                     for(String line:lineIds) {
                         writeFileLines.add(line);
                         FileWriter.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));

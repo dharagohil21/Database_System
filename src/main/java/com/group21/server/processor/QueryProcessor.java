@@ -2,13 +2,13 @@ package com.group21.server.processor;
 
 import java.util.Date;
 
-import com.group21.server.queries.deleteQuery.DeleteQueryExecutor;
-import com.group21.server.queries.insert.InsertQueryExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.server.models.QueryType;
 import com.group21.server.queries.createtable.CreateTableQueryExecutor;
+import com.group21.server.queries.deleteQuery.DeleteQueryExecutor;
+import com.group21.server.queries.insert.InsertQueryExecutor;
 
 public class QueryProcessor {
 

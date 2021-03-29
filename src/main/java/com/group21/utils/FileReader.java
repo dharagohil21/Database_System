@@ -1,10 +1,7 @@
 package com.group21.utils;
 
 import com.group21.configurations.ApplicationConfiguration;
-import com.group21.server.models.Column;
-import com.group21.server.models.Constraint;
-import com.group21.server.models.DataType;
-import com.group21.server.models.TableInfo;
+import com.group21.server.models.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +74,27 @@ public class FileReader {
         return tableInfoList;
     }
 
+
+    public static Map<String, DatabaseSite> readDistributedDataDictionary() {
+        Map<String, DatabaseSite> tableInfoMap = new HashMap<>();
+        try {
+            RemoteDatabaseReader.syncDistributedDataDictionary();
+            Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.DISTRIBUTED_DATA_DICTIONARY_NAME);
+            List<String> fileLines = Files.readAllLines(localDDFilePath);
+            fileLines.remove(0);
+
+            for (String line : fileLines) {
+                String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+
+                tableInfoMap.put(columnList[0], DatabaseSite.from(columnList[1]));
+            }
+        } catch (IOException exception) {
+            LOGGER.error("Error occurred while reading distributed data dictionary.");
+        }
+        return tableInfoMap;
+    }
+
+
     public static List<String>  readColumnMetadata(String tableName) {
         String metadataFileName = tableName + ApplicationConfiguration.METADATA_FILE_FORMAT;
         Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + metadataFileName);
@@ -90,9 +108,9 @@ public class FileReader {
                 String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
                 columnNames.add(columnList[0]);
             }
-            }catch (IOException e) {
-                LOGGER.error("Error occurred while reading column name meta data");
-            }
+        } catch (IOException e) {
+            LOGGER.error("Error occurred while reading column name meta data");
+        }
         return columnNames;
     }
 
