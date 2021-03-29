@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import com.group21.server.authentication.Authentication;
 import com.group21.server.processor.QueryProcessor;
 import com.group21.utils.RegexUtil;
+import com.group21.utils.RemoteDatabaseConnection;
+import com.group21.utils.RemoteDatabaseWriter;
 
 public class DDBMSClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(DDBMSClient.class);
@@ -75,9 +77,12 @@ public class DDBMSClient {
                         LOGGER.info("ERD for database - {} generated successfully.", RegexUtil.getMatch(userInput, "[^erd ][^\\s?]+"));
                         break;
                     case "exit":
+                        RemoteDatabaseConnection.closeSession();
+                        System.exit(0);
                         return;
                     default:
                         QueryProcessor.process(command);
+                        RemoteDatabaseWriter.syncDistributedDataDictionary();
                         break;
                 }
                 LOGGER.info("");

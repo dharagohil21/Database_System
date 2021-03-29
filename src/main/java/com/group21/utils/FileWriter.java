@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
 import com.group21.server.models.Column;
+import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
 
 public class FileWriter {
@@ -67,14 +68,14 @@ public class FileWriter {
 
         String dataFileName = tableName + ApplicationConfiguration.DATA_FILE_FORMAT;
 
-        Path metadataFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + dataFileName);
+        Path dataFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + dataFileName);
 
         try {
-            if (Files.notExists(metadataFilePath)) {
-                Files.createFile(metadataFilePath);
+            if (Files.notExists(dataFilePath)) {
+                Files.createFile(dataFilePath);
             }
 
-            Files.write(metadataFilePath, tableData.getBytes(), StandardOpenOption.APPEND);
+            Files.write(dataFilePath, tableData.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException exception) {
             LOGGER.error("Error occurred while storing data in table {}.", tableName);
         }
@@ -94,6 +95,22 @@ public class FileWriter {
             Files.write(localDDFilePath, tableInfoDetails.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException exception) {
             LOGGER.error("Error occurred while writing to local data dictionary.");
+        }
+    }
+
+    public static void writeDistributedDataDictionary(String tableName, DatabaseSite databaseSite) {
+        try {
+            Path gddFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.DISTRIBUTED_DATA_DICTIONARY_NAME);
+
+            StringJoiner gddInfoJoiner = new StringJoiner(ApplicationConfiguration.DELIMITER);
+            gddInfoJoiner.add(tableName);
+            gddInfoJoiner.add(databaseSite.name());
+
+            String tableInfoDetails = gddInfoJoiner.toString() + ApplicationConfiguration.NEW_LINE;
+
+            Files.write(gddFilePath, tableInfoDetails.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException exception) {
+            LOGGER.error("Error occurred while writing to distributed data dictionary.");
         }
     }
 }
