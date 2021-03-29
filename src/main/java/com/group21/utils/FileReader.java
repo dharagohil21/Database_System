@@ -1,13 +1,5 @@
 package com.group21.utils;
 
-import com.group21.configurations.ApplicationConfiguration;
-import com.group21.server.models.Column;
-import com.group21.server.models.Constraint;
-import com.group21.server.models.DataType;
-import com.group21.server.models.TableInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -18,6 +10,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.models.Column;
+import com.group21.server.models.Constraint;
+import com.group21.server.models.DataType;
+import com.group21.server.models.DatabaseSite;
+import com.group21.server.models.TableInfo;
 
 public class FileReader {
 
@@ -73,6 +75,25 @@ public class FileReader {
             LOGGER.error("Error occurred while reading local data dictionary.");
         }
         return tableInfoList;
+    }
+
+    public static Map<String, DatabaseSite> readDistributedDataDictionary() {
+        Map<String, DatabaseSite> tableInfoMap = new HashMap<>();
+        try {
+            RemoteDatabaseReader.syncDistributedDataDictionary();
+            Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.DISTRIBUTED_DATA_DICTIONARY_NAME);
+            List<String> fileLines = Files.readAllLines(localDDFilePath);
+            fileLines.remove(0);
+
+            for (String line : fileLines) {
+                String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+
+                tableInfoMap.put(columnList[0], DatabaseSite.from(columnList[1]));
+            }
+        } catch (IOException exception) {
+            LOGGER.error("Error occurred while reading distributed data dictionary.");
+        }
+        return tableInfoMap;
     }
 
     public static List<Column> readMetadata(String tableName) {
