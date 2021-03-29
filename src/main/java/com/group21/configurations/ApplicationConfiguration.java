@@ -14,9 +14,6 @@ public class ApplicationConfiguration {
     public static final String DISTRIBUTED_DATA_DICTIONARY_NAME = "distributed_data_dictionary.dat";
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String NEW_LINE = "\n";
-    public static final String INTEGER_REGEX = "[0-9]+";
-    public static final String DOUBLE_REGEX = "[0-9]+(\\.[0-9]+)";
-    public static final String TEXT_REGEX = "[a-zA-Z_]+";
 
     // Remote Database configuration
     public static final String REMOTE_DB_DATA_DIRECTORY = "/home/kartik_gevariya0003/csci-5408-group-21/DDBMS_21_Data";

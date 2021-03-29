@@ -1,6 +1,7 @@
 package com.group21.utils;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.constants.CommonRegex;
 import com.group21.server.models.*;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -194,11 +195,11 @@ public class FileReader {
 
         DataType columnValueDatatype = columnTypeList.get(columnName);
         if (columnValueDatatype.equals(DataType.INT)) {
-            columnValue = RegexUtil.getMatch(columnValue, ApplicationConfiguration.INTEGER_REGEX);
+            columnValue = RegexUtil.getMatch(columnValue, CommonRegex.INTEGER_REGEX);
         } else if (columnValueDatatype.equals(DataType.DOUBLE)) {
-            columnValue = RegexUtil.getMatch(columnValue, ApplicationConfiguration.DOUBLE_REGEX);
+            columnValue = RegexUtil.getMatch(columnValue, CommonRegex.DOUBLE_REGEX);
         } else if (columnValueDatatype.equals(DataType.TEXT)) {
-            columnValue = RegexUtil.getMatch(columnValue,ApplicationConfiguration.TEXT_REGEX);
+            columnValue = RegexUtil.getMatch(columnValue,CommonRegex.TEXT_REGEX);
 
             if (columnValue != null) {
                 columnValue = columnValue.substring(1, columnValue.length() - 1);

@@ -1,6 +1,7 @@
 package com.group21.server.queries.deleteQuery;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.models.Column;
 import com.group21.server.models.TableInfo;
 import com.group21.utils.FileReader;
 import com.group21.utils.FileWriter;
@@ -16,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DeleteParser
 {
@@ -71,8 +73,10 @@ public class DeleteParser
             {
                 Files.delete(localDDFilePath);
                 //No Constraints
-                FileReader.readColumnMetadata(tableInfo.getTableName());
-                FileWriter.writeData(tableInfo.getTableName(),FileReader.readColumnMetadata(tableInfo.getTableName()));
+                //FileReader.readColumnMetadata(tableInfo.getTableName());
+                List<Column> columns = FileReader.readMetadata(tableInfo.getTableName());
+                List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
+                FileWriter.writeData(tableInfo.getTableName(),columnNames);
                 LOGGER.info("Delete executed successfully!");
             }
 
