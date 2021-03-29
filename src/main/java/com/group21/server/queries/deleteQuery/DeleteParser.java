@@ -2,6 +2,7 @@ package com.group21.server.queries.deleteQuery;
 
 import com.group21.configurations.ApplicationConfiguration;
 import com.group21.server.models.TableInfo;
+import com.group21.server.queries.insert.InsertParser;
 import com.group21.utils.FileReader;
 import com.group21.utils.FileWriter;
 import com.group21.utils.RegexUtil;
@@ -13,7 +14,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class DeleteParser
@@ -59,25 +62,47 @@ public class DeleteParser
         String dataFileName = tableInfo.getTableName() + ApplicationConfiguration.DATA_FILE_FORMAT;
         Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + dataFileName);
         try {
-            Files.delete(localDDFilePath);
+            List<String> fileLines = Files.readAllLines(localDDFilePath);
+            List<String> uniqueIds = new ArrayList<>();
+            fileLines.remove(0);
+            for (String line : fileLines) {
+                String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+                uniqueIds.add(columnList[0]);
+            }
+            if(!FileReader.checkForeignKeyConstraints(tableInfo.getTableName(),uniqueIds))
+            {
+                Files.delete(localDDFilePath);
+                System.out.println("no const!");
+                FileReader.readColumnMetadata(tableInfo.getTableName());
+                FileWriter.writeData(tableInfo.getTableName(),FileReader.readColumnMetadata(tableInfo.getTableName()));
+                LOGGER.info("Delete executed successfully!");
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
-        FileReader.readColumnMetadata(tableInfo.getTableName());
-        FileWriter.writeData(tableInfo.getTableName(),FileReader.readColumnMetadata(tableInfo.getTableName()));
-        LOGGER.info("Delete query executed successfully!");
         return true;
     }
 
     public String getTableName(String query) {
-        if(query.matches(DELETE_TABLE_REGEX)) {
+        String tableName = " ";
+
+        if (query.matches(DELETE_TABLE_REGEX)) {
             int tableNameStartIndex = query.indexOf("FROM") + 5;
             int tableNameEndIndex = query.indexOf(";");
-            return query.substring(tableNameStartIndex, tableNameEndIndex);
+            tableName = query.substring(tableNameStartIndex, tableNameEndIndex);
         }
-        int tableNameStartIndex = query.indexOf("FROM") + 5;
-        int tableNameEndIndex = query.indexOf("WHERE") - 1;
-        return query.substring(tableNameStartIndex, tableNameEndIndex);
+        else{
+            try{
+                int tableNameStartIndex = query.indexOf("FROM") + 5;
+                int tableNameEndIndex = query.indexOf("WHERE") - 1;
+                tableName = query.substring(tableNameStartIndex, tableNameEndIndex);
+            }
+            catch (Exception exception){
+                LOGGER.error("Missing where condition!");
+            }
+        }
+        return tableName;
     }
 
     public String[] getWhereParameters(String query){
@@ -90,23 +115,42 @@ public class DeleteParser
         String[] whereParameters = getWhereParameters(query);
         String dataFileName = tableInfo.getTableName() + ApplicationConfiguration.DATA_FILE_FORMAT;
         Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + dataFileName);
-        List<String> fileLines=null;
+        List<String> fileLines;
+        List<String> writeFileLines=new ArrayList<>();
+        List<String> uniqueIds = new ArrayList<>();
+        List<String> lineIds = new ArrayList<>();
+
         try {
             fileLines = Files.readAllLines(localDDFilePath);
             List<String> headers = Arrays.asList(fileLines.get(0).split(ApplicationConfiguration.DELIMITER_REGEX));
             Integer headerIndex = headers.indexOf(whereParameters[0]);
             fileLines.remove(0);
-            for (String line : fileLines) {
-                String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
-                if(columnList[headerIndex].equalsIgnoreCase(whereParameters[2].replace(";",""))){
-                    fileLines.remove(line);
-                    //System.out.println(fileLines);
-                    deleteTable(tableInfo);
-                    FileWriter.writeData(tableInfo.getTableName(),fileLines);
+            if (FileReader.checkQueryConstraints(tableInfo.getTableName(), whereParameters[0], whereParameters[2].replace(";", "")))
+            {
+                for (String line : fileLines) {
+                    String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+                    if (columnList[headerIndex].equalsIgnoreCase(whereParameters[2].replace(";", ""))) {
+                        uniqueIds.add(columnList[0]);
+                    }
+                    else{
+                        lineIds.add(line);
+                    }
+                }
+
+                if(!FileReader.checkForeignKeyConstraints(tableInfo.getTableName(),uniqueIds))
+                {
+                    Files.delete(localDDFilePath);
+                    FileWriter.writeData(tableInfo.getTableName(),FileReader.readColumnMetadata(tableInfo.getTableName()));
+                    System.out.println("No const");
+                    for(String line:lineIds) {
+                        writeFileLines.add(line);
+                        FileWriter.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));
+                    }
+                    LOGGER.info("Delete executed successfully!");
                 }
             }
-            } catch (IOException e) {
-            e.printStackTrace();
+            }catch (IOException e) {
+            LOGGER.error("Error occurred while deleting the table");
         }
         return true;
     }

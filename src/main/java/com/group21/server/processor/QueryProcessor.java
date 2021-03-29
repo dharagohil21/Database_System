@@ -32,6 +32,7 @@ public class QueryProcessor {
             case DELETE:
                 DeleteQueryExecutor deleteQueryExecutor = new DeleteQueryExecutor();
                 deleteQueryExecutor.execute(query);
+                break;
             case INSERT:
                 InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor();
                 insertQueryExecutor.execute(query);

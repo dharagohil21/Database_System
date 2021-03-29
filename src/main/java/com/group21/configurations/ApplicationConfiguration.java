@@ -13,4 +13,7 @@ public class ApplicationConfiguration {
     public static final String LOCAL_DATA_DICTIONARY_NAME = "local_data_dictionary.dat";
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String NEW_LINE = "\n";
+    public static final String INTEGER_REGEX = "[0-9]+";
+    public static final String DOUBLE_REGEX = "[0-9]+(\\.[0-9]+)";
+    public static final String TEXT_REGEX = "[a-zA-Z_]+";
 }
