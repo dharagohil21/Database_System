@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.group21.server.models.QueryType;
 import com.group21.server.queries.createtable.CreateTableQueryExecutor;
+import com.group21.server.queries.deleteQuery.DeleteQueryExecutor;
 import com.group21.server.queries.insert.InsertQueryExecutor;
 
 public class QueryProcessor {
@@ -28,6 +29,10 @@ public class QueryProcessor {
                 CreateTableQueryExecutor executor = new CreateTableQueryExecutor();
                 executor.execute(query);
                 break;
+            case DELETE:
+                DeleteQueryExecutor deleteQueryExecutor = new DeleteQueryExecutor();
+                deleteQueryExecutor.execute(query);
+                break;
             case INSERT:
                 InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor();
                 insertQueryExecutor.execute(query);
@@ -37,7 +42,6 @@ public class QueryProcessor {
             default:
                 LOGGER.info("Provided query is not yet supported by this tool.");
                 break;
-
         }
 
         long endTime = System.currentTimeMillis();

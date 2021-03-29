@@ -20,4 +20,5 @@ public class ApplicationConfiguration {
     public static final String REMOTE_DB_USER = "kartik_gevariya0003";
     public static final String REMOTE_DB_HOST = "34.67.239.126";
     public static final String PRIVATE_KEY_FILE_PATH = "/Users/kartikgevariya/.ssh/id_rsa_gcp";
+
 }

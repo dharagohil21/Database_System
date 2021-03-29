@@ -6,6 +6,7 @@ public class Column {
     private Constraint constraint;
     private String foreignKeyTable;
     private String foreignKeyColumnName;
+    private Integer columnPosition;
 
     public String getColumnName() {
         return columnName;
@@ -45,5 +46,13 @@ public class Column {
 
     public void setForeignKeyColumnName(String foreignKeyColumnName) {
         this.foreignKeyColumnName = foreignKeyColumnName;
+    }
+
+    public Integer getColumnPosition() {
+        return columnPosition;
+    }
+
+    public void setColumnPosition(Integer columnPosition) {
+        this.columnPosition = columnPosition;
     }
 }
