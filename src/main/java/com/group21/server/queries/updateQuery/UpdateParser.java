@@ -27,8 +27,6 @@ public class UpdateParser
     public boolean isValid(String query) {
         String matchedQuery = RegexUtil.getMatch(query, UPDATE_TABLE_REGEX);
         String matchedWhereQuery = RegexUtil.getMatch(query, UPDATE_TABLE_WHERE_REGEX);
-        System.out.println(matchedQuery);
-        System.out.println(matchedWhereQuery);
         if (Strings.isBlank(matchedQuery) && Strings.isBlank(matchedWhereQuery)) {
             LOGGER.error("Syntax error in provided update query!");
             return false;
