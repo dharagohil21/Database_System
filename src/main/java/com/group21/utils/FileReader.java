@@ -264,4 +264,20 @@ public class FileReader {
         }
         return violatedIds;
     }
+
+    public static boolean checkPrimaryKeyConstraints(String tableName, String uniqueId)
+    {
+        List<Column> columns = FileReader.readMetadata(tableName);
+
+        List<Column> getPrimaryKeyColumns =
+                columns.stream().filter(
+                        t -> t.getConstraint().getKeyword().equals("PRIMARY KEY")
+                ).collect(Collectors.toList());
+        List<String> idsPresent = checkForeignKeyUniqueIds(new ArrayList<String>(){{add(uniqueId);}},tableName,getPrimaryKeyColumns.get(0));
+        if(idsPresent.isEmpty()){
+            return true;
+        }
+        return false;
+
+    }
 }

@@ -1,10 +1,10 @@
 package com.group21.server.queries.updateQuery;
 
 public class UpdateQueryExecutor {
-    private UpdateQueryParser updateQueryParser;
+    private UpdateParser updateQueryParser;
 
     public UpdateQueryExecutor(){
-        this.updateQueryParser = new UpdateQueryParser();
+        this.updateQueryParser = new UpdateParser();
     }
 
     public void execute(String query){
