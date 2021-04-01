@@ -29,7 +29,7 @@ public class DeleteParser
         String matchedQuery = RegexUtil.getMatch(query, DELETE_TABLE_REGEX);
         String matchedWhereQuery = RegexUtil.getMatch(query, DELETE_TABLE_WHERE_REGEX);
         if (Strings.isBlank(matchedQuery) && Strings.isBlank(matchedWhereQuery)) {
-            LOGGER.error("Syntax error in provided delete query.");
+            LOGGER.error("Syntax error in provided delete query!");
             return false;
         }
         boolean invalidTableName = true;
@@ -73,7 +73,6 @@ public class DeleteParser
             {
                 Files.delete(localDDFilePath);
                 //No Constraints
-                //FileReader.readColumnMetadata(tableInfo.getTableName());
                 List<Column> columns = FileReader.readMetadata(tableInfo.getTableName());
                 List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
                 FileWriter.writeData(tableInfo.getTableName(),columnNames);
@@ -132,7 +131,7 @@ public class DeleteParser
                 for (String line : fileLines) {
                     String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
                     if (columnList[headerIndex].equalsIgnoreCase(whereParameters[2].replace(";", ""))) {
-                        uniqueIds.add(columnList[0]);
+                        uniqueIds.add(columnList[0]);//0:headerIndex
                     }
                     else{
                         lineIds.add(line);
