@@ -14,7 +14,6 @@ import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
 import com.group21.server.models.DataType;
 import com.group21.server.models.TableInfo;
-import com.group21.server.queries.createtable.CreateTableParser;
 import com.group21.utils.FileReader;
 import com.group21.utils.RegexUtil;
 

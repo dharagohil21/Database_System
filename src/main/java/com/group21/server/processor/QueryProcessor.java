@@ -2,6 +2,7 @@ package com.group21.server.processor;
 
 import java.util.Date;
 
+import com.group21.server.queries.select.SelectQueryExecutor;
 import com.group21.server.queries.updateQuery.UpdateQueryExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,10 @@ public class QueryProcessor {
             case INSERT:
                 InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor();
                 insertQueryExecutor.execute(query);
+                break;
+            case SELECT:
+                SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor();
+                selectQueryExecutor.execute(query);
                 break;
             case DROP:
                 break;
