@@ -1,8 +1,9 @@
 package com.group21.server.queries.insert;
 
+import com.group21.utils.FileWriter;
+
 import java.util.List;
 
-import com.group21.utils.FileWriter;
 
 public class InsertQueryExecutor {
 
@@ -19,6 +20,7 @@ public class InsertQueryExecutor {
             String tableName = insertParser.getTableName(query);
             List<String> columnValues = insertParser.getColumnValues(query, tableName);
             FileWriter.writeData(tableName, columnValues);
+            FileWriter.incrementRowCountInLocalDataDictionary(tableName);
         }
     }
 }

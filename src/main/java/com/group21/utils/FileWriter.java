@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -111,6 +112,29 @@ public class FileWriter {
             Files.write(gddFilePath, tableInfoDetails.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException exception) {
             LOGGER.error("Error occurred while writing to distributed data dictionary.");
+        }
+    }
+
+    public static void incrementRowCountInLocalDataDictionary(String tableName) {
+        List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
+        List<String> tableNameList = new ArrayList<>();
+        for(TableInfo tableInfo1: tableInfoList) {
+            tableNameList.add(tableInfo1.getTableName());
+        }
+        TableInfo tableInfo = tableInfoList.get(tableNameList.indexOf(tableName));
+        int rows = tableInfo.getNumberOfRows() + 1;
+        tableInfo.setNumberOfRows(rows);
+        tableInfoList.set(tableNameList.indexOf(tableName), tableInfo);
+        Path localDDPath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.LOCAL_DATA_DICTIONARY_NAME);
+        String headerRow = "TableName|NumberOfRows|CreatedOn" + ApplicationConfiguration.NEW_LINE;
+        try {
+            Files.write(localDDPath, headerRow.getBytes());
+        }
+        catch (IOException exception) {
+            LOGGER.error("Error occurred while creating data directory.");
+        }
+        for (TableInfo tableInfo2: tableInfoList) {
+            writeLocalDataDictionary(tableInfo2);
         }
     }
 }
