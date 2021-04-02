@@ -25,6 +25,11 @@ public enum DatabaseSite {
         }
 
         @Override
+        public List<Column> readMetadata(String tableName) {
+            return FileReader.readMetadata(tableName);
+        }
+
+        @Override
         public void writeData(String tableName, List<String> columnData) {
             FileWriter.writeData(tableName, columnData);
         }
@@ -46,6 +51,11 @@ public enum DatabaseSite {
         }
 
         @Override
+        public List<Column> readMetadata(String tableName) {
+            return RemoteDatabaseReader.readMetadata(tableName);
+        }
+
+        @Override
         public void writeData(String tableName, List<String> columnData) {
             RemoteDatabaseWriter.writeData(tableName, columnData);
         }
@@ -56,6 +66,8 @@ public enum DatabaseSite {
     public abstract void writeLocalDataDictionary(TableInfo tableInfo);
 
     public abstract void writeMetadata(String tableName, List<Column> columnDetails);
+
+    public abstract List<Column> readMetadata(String tableName);
 
     public abstract void writeData(String tableName, List<String> columnData);
 
