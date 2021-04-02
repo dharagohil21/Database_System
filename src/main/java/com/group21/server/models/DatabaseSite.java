@@ -10,6 +10,11 @@ import com.group21.utils.RemoteDatabaseWriter;
 public enum DatabaseSite {
     LOCAL {
         @Override
+        public void writeFile(String fileName, String fileContent) {
+            FileWriter.writeFile(fileName, fileContent);
+        }
+
+        @Override
         public List<TableInfo> readLocalDataDictionary() {
             return FileReader.readLocalDataDictionary();
         }
@@ -33,8 +38,18 @@ public enum DatabaseSite {
         public void writeData(String tableName, List<String> columnData) {
             FileWriter.writeData(tableName, columnData);
         }
+
+        @Override
+        public void deleteTable(String tableName) {
+            FileWriter.deleteTable(tableName);
+        }
     },
     REMOTE {
+        @Override
+        public void writeFile(String fileName, String fileContent) {
+            RemoteDatabaseWriter.writeFile(fileName, fileContent);
+        }
+
         @Override
         public List<TableInfo> readLocalDataDictionary() {
             return RemoteDatabaseReader.readLocalDataDictionary();
@@ -59,7 +74,14 @@ public enum DatabaseSite {
         public void writeData(String tableName, List<String> columnData) {
             RemoteDatabaseWriter.writeData(tableName, columnData);
         }
+
+        @Override
+        public void deleteTable(String tableName) {
+            RemoteDatabaseWriter.deleteTable(tableName);
+        }
     };
+
+    public abstract void writeFile(String fileName, String fileContent);
 
     public abstract List<TableInfo> readLocalDataDictionary();
 
@@ -70,6 +92,8 @@ public enum DatabaseSite {
     public abstract List<Column> readMetadata(String tableName);
 
     public abstract void writeData(String tableName, List<String> columnData);
+
+    public abstract void deleteTable(String tableName);
 
     public static DatabaseSite from(String siteName) {
         for (DatabaseSite databaseSite : values()) {

@@ -2,14 +2,15 @@ package com.group21.server.processor;
 
 import java.util.Date;
 
-import com.group21.server.queries.updateQuery.UpdateQueryExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.server.models.QueryType;
 import com.group21.server.queries.createtable.CreateTableQueryExecutor;
 import com.group21.server.queries.deleteQuery.DeleteQueryExecutor;
+import com.group21.server.queries.droptable.DropTableQueryExecutor;
 import com.group21.server.queries.insert.InsertQueryExecutor;
+import com.group21.server.queries.updateQuery.UpdateQueryExecutor;
 
 public class QueryProcessor {
 
@@ -43,6 +44,8 @@ public class QueryProcessor {
                 insertQueryExecutor.execute(query);
                 break;
             case DROP:
+                DropTableQueryExecutor dropTableQueryExecutor = new DropTableQueryExecutor();
+                dropTableQueryExecutor.execute(query);
                 break;
             default:
                 LOGGER.info("Provided query is not yet supported by this tool.");
