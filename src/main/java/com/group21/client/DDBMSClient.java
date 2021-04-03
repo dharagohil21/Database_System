@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.group21.server.authentication.Authentication;
 import com.group21.server.processor.QueryProcessor;
-import com.group21.server.sqlDump.CreateSqlDump;
+import com.group21.server.sqlDump.SqlDumpGenerator;
 import com.group21.server.queries.erd.ERDGenerator;
 import com.group21.utils.RemoteDatabaseConnection;
 import com.group21.utils.RemoteDatabaseWriter;
@@ -72,7 +72,7 @@ public class DDBMSClient {
                         LOGGER.info("\texit                     - To exit DDBMS client");
                         break;
                     case "sqldump":
-                    	CreateSqlDump.process();
+                    	SqlDumpGenerator.generate();
                         break;
                     case "erd":
                         ERDGenerator.generate();

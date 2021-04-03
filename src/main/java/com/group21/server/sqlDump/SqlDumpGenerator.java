@@ -21,11 +21,14 @@ import com.group21.server.queries.createtable.CreateTableParser;
 import com.group21.utils.FileReader;
 import com.group21.utils.RemoteDatabaseReader;
 
-public class CreateSqlDump {
+public class SqlDumpGenerator {
+	
+	public static final String START_BRACKET = "(";
+    public static final String CLOSE_BRACKET = ")";
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(CreateTableParser.class);
 
-	public static void process() {
+	public static void generate() {
 		Path sqlDumpFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.SQL_DUMP_FILE_NAME);
 
         try {
@@ -40,7 +43,7 @@ public class CreateSqlDump {
 			 for(String list : tableNameList) {
 				 DatabaseSite site = tableInfoMap.get(list);
 				 
-				 StringBuilder queryString = new StringBuilder("CREATE TABLE " + list.toLowerCase() + " " + ApplicationConfiguration.START_BRACKET);
+				 StringBuilder queryString = new StringBuilder("CREATE TABLE " + list.toLowerCase() + " " + START_BRACKET);
 				 
 				 List<Column> localColumns = new ArrayList<Column>();
 				 if(site.equals(DatabaseSite.LOCAL)) {
@@ -76,11 +79,11 @@ public class CreateSqlDump {
 						 
 					if(!foreignKeyTableList.get(i).equals("null")) {
 						queryString.append(foreignKeyTableList.get(i).toLowerCase());
-						queryString.append(ApplicationConfiguration.START_BRACKET + foreignKeyColumnNameList.get(i).toLowerCase() + ApplicationConfiguration.CLOSE_BRACKET);
+						queryString.append(START_BRACKET + foreignKeyColumnNameList.get(i).toLowerCase() + CLOSE_BRACKET);
 					}
 						 
 					if(i == columnPositionList.size()-1) {
-						queryString.append(ApplicationConfiguration.CLOSE_BRACKET);		 
+						queryString.append(CLOSE_BRACKET);		 
 					}
 					else {
 						queryString.append(", ");
