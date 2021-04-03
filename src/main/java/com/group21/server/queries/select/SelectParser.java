@@ -1,7 +1,8 @@
 package com.group21.server.queries.select;
+
 import com.group21.server.models.Column;
 import com.group21.server.models.DataType;
-import com.group21.server.models.TableInfo;
+import com.group21.server.models.DatabaseSite;
 import com.group21.utils.FileReader;
 import com.group21.utils.RegexUtil;
 import org.apache.logging.log4j.util.Strings;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SelectParser {
 
@@ -32,34 +34,25 @@ public class SelectParser {
             return false;
         }
 
-        boolean invalidTableName = true;
-
         String tableName = getTableName(query);
 
-        List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
+        DatabaseSite databaseSite = getDatabaseSite(tableName);
 
-        for (TableInfo tableInfo : tableInfoList) {
-            if (tableInfo.getTableName().equals(tableName)) {
-                invalidTableName = false;
-                break;
-            }
-        }
-
-        if (invalidTableName) {
+        if (databaseSite == null) {
             LOGGER.error("Table Name '{}' Does not exist ", tableName);
             return false;
         }
 
-        List<Column> columnData = FileReader.readMetadata(tableName);
+        List<Column> columnData = databaseSite.readMetadata(tableName);
         List<String> columnNameList = new ArrayList<>();
-        for (Column c: columnData) {
+        for (Column c : columnData) {
             columnNameList.add(c.getColumnName());
         }
 
         if (queryType == 2 || queryType == 4) {
-            List<String> columnList = getColumns(query);
+            List<String> columnList = getColumns(query, databaseSite);
 
-            for (String s: columnList) {
+            for (String s : columnList) {
                 if (!columnNameList.contains(s)) {
                     LOGGER.error("Column '{}' does not exist in table '{}' ", s, tableName);
                     return false;
@@ -112,22 +105,25 @@ public class SelectParser {
         return query.substring(tableNameStartIndex, tableNameEndIndex).trim();
     }
 
+    public DatabaseSite getDatabaseSite(String tableName) {
+        Map<String, DatabaseSite> dataDictionary = FileReader.readDistributedDataDictionary();
+        return dataDictionary.get(tableName);
+    }
 
-    public List<String> getColumns(String query) {
+    public List<String> getColumns(String query, DatabaseSite databaseSite) {
         int columnStartIndex = query.indexOf("SELECT") + 7;
         int columnEndIndex = query.indexOf("FROM", columnStartIndex);
         String column = query.substring(columnStartIndex, columnEndIndex).trim();
         List<String> columnList = new ArrayList<>();
         if (column.equals("*")) {
             String tableName = getTableName(query);
-            List<Column> columnDataList = FileReader.readMetadata(tableName);
-            for (Column c: columnDataList) {
+            List<Column> columnDataList = databaseSite.readMetadata(tableName);
+            for (Column c : columnDataList) {
                 columnList.add(c.getColumnName());
             }
-        }
-        else {
+        } else {
             String[] columnArray = column.split(",");
-            for (String s: columnArray) {
+            for (String s : columnArray) {
                 columnList.add(s.trim());
             }
         }
@@ -157,17 +153,13 @@ public class SelectParser {
         String matchedQueryType4 = RegexUtil.getMatch(query, SELECT_REGEX_TYPE4);
         if (Strings.isBlank(matchedQueryType1) && Strings.isBlank(matchedQueryType2) && Strings.isBlank(matchedQueryType3) && Strings.isBlank(matchedQueryType4)) {
             return 0;
-        }
-        else if (Strings.isBlank(matchedQueryType2) && Strings.isBlank(matchedQueryType3) && Strings.isBlank(matchedQueryType4)) {
+        } else if (Strings.isBlank(matchedQueryType2) && Strings.isBlank(matchedQueryType3) && Strings.isBlank(matchedQueryType4)) {
             return 1;
-        }
-        else if (Strings.isBlank(matchedQueryType3) && Strings.isBlank(matchedQueryType4)) {
+        } else if (Strings.isBlank(matchedQueryType3) && Strings.isBlank(matchedQueryType4)) {
             return 2;
-        }
-        else if (Strings.isBlank(matchedQueryType4)) {
+        } else if (Strings.isBlank(matchedQueryType4)) {
             return 3;
-        }
-        else {
+        } else {
             return 4;
         }
     }

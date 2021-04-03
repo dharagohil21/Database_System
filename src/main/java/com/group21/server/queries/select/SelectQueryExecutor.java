@@ -1,8 +1,8 @@
 package com.group21.server.queries.select;
 
 import com.group21.server.models.Column;
+import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
-import com.group21.utils.FileReader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,14 +21,15 @@ public class SelectQueryExecutor {
         if (isQueryValid) {
             int queryType = selectParser.getQueryType(query);
             String tableName = selectParser.getTableName(query);
-            List<String> columnNames = selectParser.getColumns(query);
+            DatabaseSite databaseSite = selectParser.getDatabaseSite(tableName);
+            List<String> columnNames = selectParser.getColumns(query, databaseSite);
 
             List<List<String>> selectData = new ArrayList<>();
             selectData.add(columnNames);
 
-            List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
+            List<TableInfo> tableInfoList = databaseSite.readLocalDataDictionary();
             List<String> tableNameList = new ArrayList<>();
-            for(TableInfo tableInfo: tableInfoList) {
+            for (TableInfo tableInfo : tableInfoList) {
                 tableNameList.add(tableInfo.getTableName());
             }
             int tableRowCount = tableInfoList.get(tableNameList.indexOf(tableName)).getNumberOfRows();
@@ -36,30 +37,29 @@ public class SelectQueryExecutor {
             if (queryType == 1 || queryType == 2) {
 
                 List<List<String>> columnDataList = new ArrayList<>();
-                for (String columnName: columnNames) {
-                    List<String> columnData = FileReader.readColumnData(tableName, columnName);
+                for (String columnName : columnNames) {
+                    List<String> columnData = databaseSite.readColumnData(tableName, columnName);
                     columnDataList.add(columnData);
                 }
 
-                for(int i=0; i<tableRowCount; i++) {
+                for (int i = 0; i < tableRowCount; i++) {
                     List<String> rowData = new ArrayList<>();
-                    for (int j=0; j<columnDataList.size(); j++) {
+                    for (int j = 0; j < columnDataList.size(); j++) {
                         rowData.add(columnDataList.get(j).get(i));
                     }
                     selectData.add(rowData);
                 }
-            }
-            else {
+            } else {
                 List<List<String>> columnDataList = new ArrayList<>();
-                List<Column> allColumnMetadataData = FileReader.readMetadata(tableName);
+                List<Column> allColumnMetadataData = databaseSite.readMetadata(tableName);
                 List<String> allColumnNames = new ArrayList<>();
 
-                for (Column c: allColumnMetadataData) {
+                for (Column c : allColumnMetadataData) {
                     allColumnNames.add(c.getColumnName());
                 }
 
-                for (String columnName: allColumnNames) {
-                    List<String> columnData = FileReader.readColumnData(tableName, columnName);
+                for (String columnName : allColumnNames) {
+                    List<String> columnData = databaseSite.readColumnData(tableName, columnName);
                     columnDataList.add(columnData);
                 }
 
@@ -67,7 +67,7 @@ public class SelectQueryExecutor {
                 String conditionValue = selectParser.getConditionValue(query);
                 int conditionParameterIndex = allColumnNames.indexOf(conditionParameter);
 
-                for(int i=0; i<tableRowCount; i++) {
+                for (int i = 0; i < tableRowCount; i++) {
                     if (columnDataList.get(conditionParameterIndex).get(i).equals(conditionValue)) {
                         List<String> rowData = new ArrayList<>();
                         for (String columnName : columnNames) {
@@ -79,18 +79,17 @@ public class SelectQueryExecutor {
                 }
             }
 
-            for (int i=0; i<selectData.size(); i++) {
-                for (int j=0;j<selectData.get(i).size(); j++) {
-                    if (j==0 && i>0) {
+            for (int i = 0; i < selectData.size(); i++) {
+                for (int j = 0; j < selectData.get(i).size(); j++) {
+                    if (j == 0 && i > 0) {
                         System.out.println();
-                    }
-                    else if (j>0){
+                    } else if (j > 0) {
                         System.out.print("|");
                     }
                     System.out.print(selectData.get(i).get(j));
                 }
             }
-            System.out.println("\n" + (selectData.size()-1) + " rows returned");
+            System.out.println("\n" + (selectData.size() - 1) + " rows returned");
         }
     }
 }
