@@ -31,32 +31,14 @@ public class UpdateParser
             LOGGER.error("Syntax error in provided update query!");
             return false;
         }
-
-        boolean invalidTableName = true;
-
-        String tableName = getTableName(query);
-
-        List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
-
-        for (TableInfo tableInfo : tableInfoList) {
-            if (tableInfo.getTableName().equals(tableName)) {
-                invalidTableName = false;
-                if (query.matches(UPDATE_TABLE_REGEX)) {
-                    updateTable(tableInfo,query);
-                    break;
-                }
-                updateTableWhere(tableInfo, query);
-                break;
-            }
-        }
-        if (invalidTableName) {
-            LOGGER.error("Table Name '{}' Does not exist ", tableName);
-            return false;
-        }
         return true;
     }
 
-    private String getTableName(String query) {
+    public boolean isWhereConditionExists(String query){
+        return !query.matches(UPDATE_TABLE_REGEX);
+    }
+
+    public String getTableName(String query) {
         String tableName = " ";
         int tableNameStartIndex = query.indexOf("UPDATE") + 7;
         int tableNameEndIndex = query.indexOf("SET") - 1;
@@ -85,7 +67,7 @@ public class UpdateParser
         return whereParameters;
     }
 
-    private void updateTableWhere(TableInfo tableInfo, String query)
+    public void updateTableWhere(TableInfo tableInfo, String query)
     {
         String[] whereParameters = getWhereParameters(query);
         String[] setParameters = getSetParameters(query);
@@ -155,17 +137,19 @@ public class UpdateParser
 
     }
 
-    private void updateTable(TableInfo tableInfo,String query) {
+    public void updateTable(TableInfo tableInfo,String query) {
         String[] setParameters = getSetParameters(query);
         String dataFileName = tableInfo.getTableName() + ApplicationConfiguration.DATA_FILE_FORMAT;
-        Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + dataFileName);
+        Path localDataFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + dataFileName);
         try {
-            List<String> fileLines = Files.readAllLines(localDDFilePath);
+            //databasesite.readdata
+            List<String> fileLines = Files.readAllLines(localDataFilePath);
             List<String> headers = Arrays.asList(fileLines.get(0).split(ApplicationConfiguration.DELIMITER_REGEX));
             Integer headerIndex = headers.indexOf(setParameters[0]);
             fileLines.remove(0);
             List<String> writeFileLines = new ArrayList<>();
 
+            //Databasesite.readmetaData
             List<Column> columns = FileReader.readMetadata(tableInfo.getTableName());
             List<Column> filteredColumns =
                     columns.stream().filter(
@@ -178,6 +162,7 @@ public class UpdateParser
                 return;
             }
             if(filteredColumns.get(0).getConstraint().getKeyword().equals("FOREIGN KEY")) {
+                //databasesite.check
                 if(FileReader.checkPrimaryKeyConstraints(filteredColumns.get(0).getForeignKeyTable(),setParameters[2].replace(";", ""))){
                     LOGGER.error("Foreign Key constraint violated! Foreign Key "+ setParameters[2].replace(";", "") + " Does not exist in "+ filteredColumns.get(0).getForeignKeyTable());
                     return;
@@ -195,8 +180,8 @@ public class UpdateParser
                 }
 
                 List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
-                Files.delete(localDDFilePath);
-                FileWriter.writeData(tableInfo.getTableName(),columnNames); //ID,NAme, Dept
+                Files.delete(localDataFilePath);
+                FileWriter.writeData(tableInfo.getTableName(),columnNames);
 
                 for (String line:writeFileLines){
                     FileWriter.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));

@@ -32,30 +32,12 @@ public class DeleteParser
             LOGGER.error("Syntax error in provided delete query!");
             return false;
         }
-        boolean invalidTableName = true;
-
-        String tableName = getTableName(query);
-
-        List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
-
-        for (TableInfo tableInfo : tableInfoList) {
-            if (tableInfo.getTableName().equals(tableName)) {
-                invalidTableName = false;
-                if(query.matches(DELETE_TABLE_REGEX)){
-                    deleteTable(tableInfo);
-                    break;
-                }
-                deleteTableWhere(tableInfo,query);
-                break;
-            }
-        }
-
-        if (invalidTableName) {
-            LOGGER.error("Table Name '{}' Does not exist ", tableName);
-            return false;
-        }
 
         return true;
+    }
+
+    public boolean isWhereConditionExists(String query){
+        return !query.matches(DELETE_TABLE_REGEX);
     }
 
     public boolean deleteTable(TableInfo tableInfo)  {
