@@ -1,6 +1,6 @@
 package com.group21.server.queries.insert;
 
-import com.group21.server.models.DatabaseSite;
+import com.group21.utils.FileWriter;
 
 import java.util.List;
 
@@ -18,10 +18,9 @@ public class InsertQueryExecutor {
 
         if (isQueryValid) {
             String tableName = insertParser.getTableName(query);
-            DatabaseSite databaseSite = insertParser.getDatabaseSite(tableName);
             List<String> columnValues = insertParser.getColumnValues(query, tableName);
-            databaseSite.writeData(tableName, columnValues);
-            databaseSite.incrementRowCountInLocalDataDictionary(tableName);
+            FileWriter.writeData(tableName, columnValues);
+            FileWriter.incrementRowCountInLocalDataDictionary(tableName);
         }
     }
 }

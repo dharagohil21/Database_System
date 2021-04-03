@@ -1,11 +1,11 @@
 package com.group21.server.models;
 
+import java.util.List;
+
 import com.group21.utils.FileReader;
 import com.group21.utils.FileWriter;
 import com.group21.utils.RemoteDatabaseReader;
 import com.group21.utils.RemoteDatabaseWriter;
-
-import java.util.List;
 
 public enum DatabaseSite {
     LOCAL {
@@ -28,21 +28,6 @@ public enum DatabaseSite {
         public void writeData(String tableName, List<String> columnData) {
             FileWriter.writeData(tableName, columnData);
         }
-
-        @Override
-        public List<Column> readMetadata(String tableName) {
-            return FileReader.readMetadata(tableName);
-        }
-
-        @Override
-        public List<String> readColumnData(String tableName, String columnName) {
-            return FileReader.readColumnData(tableName, columnName);
-        }
-
-        @Override
-        public void incrementRowCountInLocalDataDictionary(String tableName) {
-            FileWriter.incrementRowCountInLocalDataDictionary(tableName);
-        }
     },
     REMOTE {
         @Override
@@ -64,31 +49,7 @@ public enum DatabaseSite {
         public void writeData(String tableName, List<String> columnData) {
             RemoteDatabaseWriter.writeData(tableName, columnData);
         }
-
-        @Override
-        public List<Column> readMetadata(String tableName) {
-            return FileReader.readMetadata(tableName);
-        }
-
-        @Override
-        public List<String> readColumnData(String tableName, String columnName) {
-            return FileReader.readColumnData(tableName, columnName);
-        }
-
-        @Override
-        public void incrementRowCountInLocalDataDictionary(String tableName) {
-            FileWriter.incrementRowCountInLocalDataDictionary(tableName);
-        }
     };
-
-    public static DatabaseSite from(String siteName) {
-        for (DatabaseSite databaseSite : values()) {
-            if (databaseSite.name().equalsIgnoreCase(siteName)) {
-                return databaseSite;
-            }
-        }
-        return LOCAL;
-    }
 
     public abstract List<TableInfo> readLocalDataDictionary();
 
@@ -98,9 +59,12 @@ public enum DatabaseSite {
 
     public abstract void writeData(String tableName, List<String> columnData);
 
-    public abstract List<Column> readMetadata(String tableName);
-
-    public abstract List<String> readColumnData(String tableName, String columnName);
-
-    public abstract void incrementRowCountInLocalDataDictionary(String tableName);
+    public static DatabaseSite from(String siteName) {
+        for (DatabaseSite databaseSite : values()) {
+            if (databaseSite.name().equalsIgnoreCase(siteName)) {
+                return databaseSite;
+            }
+        }
+        return LOCAL;
+    }
 }

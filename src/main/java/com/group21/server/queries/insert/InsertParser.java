@@ -1,16 +1,21 @@
 package com.group21.server.queries.insert;
 
-import com.group21.server.models.Column;
-import com.group21.server.models.Constraint;
-import com.group21.server.models.DataType;
-import com.group21.server.models.DatabaseSite;
-import com.group21.utils.FileReader;
-import com.group21.utils.RegexUtil;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import com.group21.server.models.Column;
+import com.group21.server.models.Constraint;
+import com.group21.server.models.DataType;
+import com.group21.server.models.TableInfo;
+import com.group21.utils.FileReader;
+import com.group21.utils.RegexUtil;
 
 public class InsertParser {
 
@@ -32,11 +37,20 @@ public class InsertParser {
             return false;
         }
 
+        boolean invalidTableName = true;
+
         String tableName = getTableName(query);
 
-        DatabaseSite databaseSite = getDatabaseSite(tableName);
+        List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
 
-        if (databaseSite == null) {
+        for (TableInfo tableInfo : tableInfoList) {
+            if (tableInfo.getTableName().equals(tableName)) {
+                invalidTableName = false;
+                break;
+            }
+        }
+
+        if (invalidTableName) {
             LOGGER.error("Table Name '{}' Does not exist ", tableName);
             return false;
         }
@@ -54,7 +68,7 @@ public class InsertParser {
         String[] columnValueArray = columnValueString.split(",");
         String[] columnNameArray;
 
-        List<Column> columnList = databaseSite.readMetadata(tableName);
+        List<Column> columnList = FileReader.readMetadata(tableName);
 
         if (Strings.isBlank(matchedQueryType2)) {
             int firstColumnNameBracketIndex = query.indexOf('(');
@@ -103,14 +117,14 @@ public class InsertParser {
                 columnNameArray[i] = columnList.get(i).getColumnName();
             }
         }
-        return checkConstraints(tableName, databaseSite, columnNameArray, columnValueArray);
+        return checkConstraints(tableName, columnNameArray, columnValueArray);
     }
 
-    private boolean checkConstraints(String tableName, DatabaseSite databaseSite, String[] columnNameArray, String[] columnValueArray) {
+    private boolean checkConstraints(String tableName, String[] columnNameArray, String[] columnValueArray) {
 
         int columnLength = columnNameArray.length;
 
-        List<Column> columnList = databaseSite.readMetadata(tableName);
+        List<Column> columnList = FileReader.readMetadata(tableName);
         List<String> columnNameList = new ArrayList<>();
         Map<String, DataType> columnTypeList = new HashMap<>();
         Map<String, Constraint> columnConstraintList = new HashMap<>();
@@ -154,7 +168,7 @@ public class InsertParser {
 
             Constraint columnValueConstraint = columnConstraintList.get(columnName);
             if (columnValueConstraint.equals(Constraint.PRIMARY_KEY)) {
-                List<String> primaryKeyValueList = databaseSite.readColumnData(tableName, columnName);
+                List<String> primaryKeyValueList = FileReader.readColumnData(tableName, columnName);
 
                 if (primaryKeyValueList.contains(columnValue)) {
                     LOGGER.error("Primary Key Constraint Violated");
@@ -163,7 +177,7 @@ public class InsertParser {
             } else if (columnValueConstraint.equals(Constraint.FOREIGN_KEY)) {
                 String foreignKeyTable = columnForeignKeyTableList.get(columnName);
                 String foreignKeyColumnName = columnForeignKeyColumnNameList.get(columnName);
-                List<String> foreignKeyValueList = databaseSite.readColumnData(foreignKeyTable, foreignKeyColumnName);
+                List<String> foreignKeyValueList = FileReader.readColumnData(foreignKeyTable, foreignKeyColumnName);
 
                 if (!foreignKeyValueList.contains(columnValue)) {
                     LOGGER.error("Foreign Key Constraint Violated");
@@ -191,9 +205,7 @@ public class InsertParser {
         String columnValueString = query.substring(firstColumnValueBracketIndex + 1, lastColumnValueBracketIndex);
         String[] columnValueArray = columnValueString.split(",");
 
-        DatabaseSite databaseSite = getDatabaseSite(tableName);
-
-        List<Column> columnList = databaseSite.readMetadata(tableName);
+        List<Column> columnList = FileReader.readMetadata(tableName);
         Map<String, DataType> columnNameType = new LinkedHashMap<>();
         for (Column c : columnList) {
             columnNameType.put(c.getColumnName(), c.getColumnType());
@@ -231,10 +243,5 @@ public class InsertParser {
             }
         }
         return columnValues;
-    }
-
-    public DatabaseSite getDatabaseSite(String tableName) {
-        Map<String, DatabaseSite> dataDictionary = FileReader.readDistributedDataDictionary();
-        return dataDictionary.get(tableName);
     }
 }
