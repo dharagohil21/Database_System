@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.group21.server.authentication.Authentication;
 import com.group21.server.processor.QueryProcessor;
+import com.group21.server.queries.erd.ERDGenerator;
 import com.group21.utils.RegexUtil;
 import com.group21.utils.RemoteDatabaseConnection;
 import com.group21.utils.RemoteDatabaseWriter;
@@ -54,7 +55,7 @@ public class DDBMSClient {
 
                 if (userInput.matches("^sqldump [^\\s?]+$")) {
                     command = "sqldump";
-                } else if (userInput.matches("^erd [^\\s?]+$")) {
+                } else if (userInput.matches("^export erd;?$")) {
                     command = "erd";
                 } else {
                     command = userInput.trim();
@@ -74,7 +75,7 @@ public class DDBMSClient {
                         LOGGER.info("SQL Dump for databse - {} exported successfully.", RegexUtil.getMatch(userInput, "[^sqldump ][^\\s?]+"));
                         break;
                     case "erd":
-                        LOGGER.info("ERD for database - {} generated successfully.", RegexUtil.getMatch(userInput, "[^erd ][^\\s?]+"));
+                        ERDGenerator.generate();
                         break;
                     case "exit":
                         RemoteDatabaseConnection.closeSession();

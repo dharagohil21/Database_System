@@ -113,4 +113,17 @@ public class RemoteDatabaseWriter {
             LOGGER.error("Error occurred while updating distributed data dictionary to remote.");
         }
     }
+
+    public static void deleteTable(String tableName) {
+        try {
+            String dataFile = ApplicationConfiguration.REMOTE_DB_DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT;
+            String metadataFile = ApplicationConfiguration.REMOTE_DB_DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.METADATA_FILE_FORMAT;
+
+            ChannelSftp sftpChannel = RemoteDatabaseConnection.getSftpChannel();
+            sftpChannel.rm(dataFile);
+            sftpChannel.rm(metadataFile);
+        } catch (Exception exception) {
+            LOGGER.error("Error occurred while deleting table {} files from remote.", tableName);
+        }
+    }
 }

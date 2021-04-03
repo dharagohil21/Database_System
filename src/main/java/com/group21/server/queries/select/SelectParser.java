@@ -1,15 +1,17 @@
 package com.group21.server.queries.select;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.group21.server.models.Column;
 import com.group21.server.models.DataType;
 import com.group21.server.models.TableInfo;
 import com.group21.utils.FileReader;
 import com.group21.utils.RegexUtil;
-import org.apache.logging.log4j.util.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SelectParser {
 
@@ -52,14 +54,14 @@ public class SelectParser {
 
         List<Column> columnData = FileReader.readMetadata(tableName);
         List<String> columnNameList = new ArrayList<>();
-        for (Column c: columnData) {
+        for (Column c : columnData) {
             columnNameList.add(c.getColumnName());
         }
 
         if (queryType == 2 || queryType == 4) {
             List<String> columnList = getColumns(query);
 
-            for (String s: columnList) {
+            for (String s : columnList) {
                 if (!columnNameList.contains(s)) {
                     LOGGER.error("Column '{}' does not exist in table '{}' ", s, tableName);
                     return false;
@@ -121,13 +123,12 @@ public class SelectParser {
         if (column.equals("*")) {
             String tableName = getTableName(query);
             List<Column> columnDataList = FileReader.readMetadata(tableName);
-            for (Column c: columnDataList) {
+            for (Column c : columnDataList) {
                 columnList.add(c.getColumnName());
             }
-        }
-        else {
+        } else {
             String[] columnArray = column.split(",");
-            for (String s: columnArray) {
+            for (String s : columnArray) {
                 columnList.add(s.trim());
             }
         }
@@ -157,17 +158,13 @@ public class SelectParser {
         String matchedQueryType4 = RegexUtil.getMatch(query, SELECT_REGEX_TYPE4);
         if (Strings.isBlank(matchedQueryType1) && Strings.isBlank(matchedQueryType2) && Strings.isBlank(matchedQueryType3) && Strings.isBlank(matchedQueryType4)) {
             return 0;
-        }
-        else if (Strings.isBlank(matchedQueryType2) && Strings.isBlank(matchedQueryType3) && Strings.isBlank(matchedQueryType4)) {
+        } else if (Strings.isBlank(matchedQueryType2) && Strings.isBlank(matchedQueryType3) && Strings.isBlank(matchedQueryType4)) {
             return 1;
-        }
-        else if (Strings.isBlank(matchedQueryType3) && Strings.isBlank(matchedQueryType4)) {
+        } else if (Strings.isBlank(matchedQueryType3) && Strings.isBlank(matchedQueryType4)) {
             return 2;
-        }
-        else if (Strings.isBlank(matchedQueryType4)) {
+        } else if (Strings.isBlank(matchedQueryType4)) {
             return 3;
-        }
-        else {
+        } else {
             return 4;
         }
     }
