@@ -10,6 +10,7 @@ import com.group21.server.queries.createtable.CreateTableQueryExecutor;
 import com.group21.server.queries.deleteQuery.DeleteQueryExecutor;
 import com.group21.server.queries.droptable.DropTableQueryExecutor;
 import com.group21.server.queries.insert.InsertQueryExecutor;
+import com.group21.server.queries.select.SelectQueryExecutor;
 import com.group21.server.queries.updateQuery.UpdateQueryExecutor;
 
 public class QueryProcessor {
@@ -42,6 +43,10 @@ public class QueryProcessor {
             case INSERT:
                 InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor();
                 insertQueryExecutor.execute(query);
+                break;
+            case SELECT:
+                SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor();
+                selectQueryExecutor.execute(query);
                 break;
             case DROP:
                 DropTableQueryExecutor dropTableQueryExecutor = new DropTableQueryExecutor();
