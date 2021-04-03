@@ -14,6 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.models.Column;
+import com.group21.server.models.Constraint;
+import com.group21.server.models.DataType;
 import com.group21.server.models.TableInfo;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
@@ -98,5 +101,39 @@ public class RemoteDatabaseReader {
         } catch (Exception exception) {
             LOGGER.error("Error occurred while reading distributed data dictionary from remote server");
         }
+    }
+
+    public static List<Column> readMetadata(String tableName) {
+        List<Column> columnInfoList = new ArrayList<>();
+        try {
+            String filePath = ApplicationConfiguration.REMOTE_DB_DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.METADATA_FILE_FORMAT;
+
+            ChannelSftp sftpChannel = RemoteDatabaseConnection.getSftpChannel();
+            InputStream stream = sftpChannel.get(filePath);
+
+            Path tempFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + UUID.randomUUID().toString() + ".tmp");
+            Files.copy(stream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            List<String> fileLines = Files.readAllLines(tempFile);
+            fileLines.remove(0);
+
+            Integer count = 0;
+            for (String line : fileLines) {
+                String[] columnInfo = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+                Column column = new Column();
+                column.setColumnName(columnInfo[0]);
+                column.setColumnType(DataType.valueOf(columnInfo[1]));
+                column.setConstraint(Constraint.valueOf(columnInfo[2]));
+                column.setForeignKeyTable(columnInfo[3]);
+                column.setForeignKeyColumnName(columnInfo[4]);
+                column.setColumnPosition(count++);
+
+                columnInfoList.add(column);
+            }
+
+            Files.deleteIfExists(tempFile);
+        } catch (Exception exception) {
+            LOGGER.error("Error occurred while reading metadata.");
+        }
+        return columnInfoList;
     }
 }
