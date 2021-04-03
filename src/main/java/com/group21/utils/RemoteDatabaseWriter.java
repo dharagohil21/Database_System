@@ -126,4 +126,15 @@ public class RemoteDatabaseWriter {
             LOGGER.error("Error occurred while deleting table {} files from remote.", tableName);
         }
     }
+
+    public static void deleteOnlyTable(String tableName) {
+        try {
+            String dataFile = ApplicationConfiguration.REMOTE_DB_DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT;
+
+            ChannelSftp sftpChannel = RemoteDatabaseConnection.getSftpChannel();
+            sftpChannel.rm(dataFile);
+        } catch (Exception exception) {
+            LOGGER.error("Error occurred while deleting table {} file from remote.", tableName);
+        }
+    }
 }

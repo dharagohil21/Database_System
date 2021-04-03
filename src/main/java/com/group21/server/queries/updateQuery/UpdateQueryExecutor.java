@@ -1,5 +1,6 @@
 package com.group21.server.queries.updateQuery;
 
+import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
 import com.group21.utils.FileReader;
 import org.slf4j.Logger;
@@ -22,17 +23,18 @@ public class UpdateQueryExecutor {
             boolean invalidTableName = true;
 
             String tableName = updateQueryParser.getTableName(query);
+            DatabaseSite databaseSite = DatabaseSite.from(updateQueryParser.getDatabaseSite(query));
 
-            List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
+            List<TableInfo> tableInfoList = databaseSite.readLocalDataDictionary();
 
             for (TableInfo tableInfo : tableInfoList) {
                 if (tableInfo.getTableName().equals(tableName)) {
                     invalidTableName = false;
                     if (updateQueryParser.isWhereConditionExists(query)) {
-                        updateQueryParser.updateTableWhere(tableInfo, query);
+                        updateQueryParser.updateTableWhere(tableInfo, query,databaseSite);
                         break;
                     }
-                    updateQueryParser.updateTable(tableInfo, query);
+                    updateQueryParser.updateTable(tableInfo, query,databaseSite);
                     break;
                 }
             }
@@ -42,3 +44,4 @@ public class UpdateQueryExecutor {
         }
     }
 }
+
