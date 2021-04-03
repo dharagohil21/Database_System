@@ -72,8 +72,7 @@ public class DDBMSClient {
                         LOGGER.info("\texit                     - To exit DDBMS client");
                         break;
                     case "sqldump":
-                    	CreateSqlDump.process(command);
-                        //LOGGER.info("SQL Dump is exported successfully.");
+                    	CreateSqlDump.process();
                         break;
                     case "erd":
                         ERDGenerator.generate();
