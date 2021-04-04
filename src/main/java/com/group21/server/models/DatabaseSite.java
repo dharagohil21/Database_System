@@ -43,6 +43,21 @@ public enum DatabaseSite {
         public void deleteTable(String tableName) {
             FileWriter.deleteTable(tableName);
         }
+
+        @Override
+        public List<String> readColumnMetadata(String tableName) {
+            return FileReader.readColumnMetadata(tableName);
+        }
+
+        @Override
+        public List<String> readData(String tableName) {
+            return FileReader.readData(tableName);
+        }
+
+        @Override
+        public void deleteOnlyTable(String tableName) {
+            FileWriter.deleteOnlyTable(tableName);
+        }
     },
     REMOTE {
         @Override
@@ -79,6 +94,21 @@ public enum DatabaseSite {
         public void deleteTable(String tableName) {
             RemoteDatabaseWriter.deleteTable(tableName);
         }
+
+        @Override
+        public List<String> readColumnMetadata(String tableName) {
+            return RemoteDatabaseReader.readColumnMetadata(tableName);
+        }
+
+        @Override
+        public List<String> readData(String tableName) {
+            return RemoteDatabaseReader.readData(tableName);
+        }
+
+        @Override
+        public void deleteOnlyTable(String tableName) {
+            RemoteDatabaseWriter.deleteOnlyTable(tableName);
+        }
     };
 
     public abstract void writeFile(String fileName, String fileContent);
@@ -94,6 +124,12 @@ public enum DatabaseSite {
     public abstract void writeData(String tableName, List<String> columnData);
 
     public abstract void deleteTable(String tableName);
+
+    public abstract List<String> readColumnMetadata(String tableName);
+
+    public abstract List<String> readData(String tableName);
+
+    public abstract void deleteOnlyTable(String tableName);
 
     public static DatabaseSite from(String siteName) {
         for (DatabaseSite databaseSite : values()) {

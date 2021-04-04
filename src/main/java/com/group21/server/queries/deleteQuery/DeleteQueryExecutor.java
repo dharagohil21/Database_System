@@ -1,5 +1,6 @@
 package com.group21.server.queries.deleteQuery;
 
+import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
 import com.group21.utils.FileReader;
 import org.slf4j.Logger;
@@ -24,17 +25,18 @@ public class DeleteQueryExecutor {
             boolean invalidTableName = true;
 
             String tableName = deleteQueryParser.getTableName(query);
+            DatabaseSite databaseSite = DatabaseSite.from(deleteQueryParser.getDatabaseSite(query));
 
-            List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
+            List<TableInfo> tableInfoList = databaseSite.readLocalDataDictionary();
 
             for (TableInfo tableInfo : tableInfoList) {
                 if (tableInfo.getTableName().equals(tableName)) {
                     invalidTableName = false;
                     if (deleteQueryParser.isWhereConditionExists(query)) {
-                        deleteQueryParser.deleteTableWhere(tableInfo, query);
+                        deleteQueryParser.deleteTableWhere(tableInfo, query,databaseSite);
                         break;
                     }
-                    deleteQueryParser.deleteTable(tableInfo);
+                    deleteQueryParser.deleteTable(tableInfo,databaseSite);
                     break;
                 }
             }
