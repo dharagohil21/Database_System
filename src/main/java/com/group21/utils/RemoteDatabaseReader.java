@@ -103,8 +103,7 @@ public class RemoteDatabaseReader {
         }
     }
 
-    public static List<String> readData(String tableName)
-    {
+    public static List<String> readData(String tableName) {
         String filePath = ApplicationConfiguration.REMOTE_DB_DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT;
         List<String> fileLines = new ArrayList<>();
         try {
@@ -115,7 +114,8 @@ public class RemoteDatabaseReader {
             Files.copy(stream, tempFile, StandardCopyOption.REPLACE_EXISTING);
             fileLines = Files.readAllLines(tempFile);
 
-        }  catch (Exception exception) {
+            Files.deleteIfExists(tempFile);
+        } catch (Exception exception) {
             LOGGER.error("Error occurred while reading metadata.");
         }
         return fileLines;
@@ -155,8 +155,7 @@ public class RemoteDatabaseReader {
         return columnInfoList;
     }
 
-    public static List<String> readColumnMetadata(String tableName)
-    {
+    public static List<String> readColumnMetadata(String tableName) {
         List<String> columnNames = new ArrayList<>();
         List<String> fileLines;
         try {
@@ -174,9 +173,11 @@ public class RemoteDatabaseReader {
                 String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
                 columnNames.add(columnList[0]);
             }
-            } catch (Exception e) {
-                LOGGER.error("Error occurred while reading column name meta data");
-            }
+
+            Files.deleteIfExists(tempFile);
+        } catch (Exception e) {
+            LOGGER.error("Error occurred while reading column name meta data");
+        }
         return columnNames;
     }
 }

@@ -1,21 +1,25 @@
 package com.group21.server.queries.constraints;
 
-import com.group21.configurations.ApplicationConfiguration;
-import com.group21.constants.CommonRegex;
-import com.group21.server.models.*;
-import com.group21.utils.RegexUtil;
-import org.apache.logging.log4j.util.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ConstraintCheck
-{
+import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.group21.configurations.ApplicationConfiguration;
+import com.group21.constants.CommonRegex;
+import com.group21.server.models.Column;
+import com.group21.server.models.Constraint;
+import com.group21.server.models.DataType;
+import com.group21.server.models.DatabaseSite;
+import com.group21.utils.FileReader;
+import com.group21.utils.RegexUtil;
+
+public class ConstraintCheck {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConstraintCheck.class);
 
     public static boolean checkQueryConstraints(String tableName, String columnName, String columnValue, DatabaseSite databaseSite) {
@@ -42,9 +46,17 @@ public class ConstraintCheck
 
         DataType columnValueDatatype = columnTypeList.get(columnName);
         if (columnValueDatatype.equals(DataType.INT)) {
-            columnValue = RegexUtil.getMatch(columnValue, CommonRegex.INTEGER_REGEX);
+            try {
+                Integer.parseInt(columnValue);
+            } catch (Exception e) {
+                columnValue = "";
+            }
         } else if (columnValueDatatype.equals(DataType.DOUBLE)) {
-            columnValue = RegexUtil.getMatch(columnValue, CommonRegex.DOUBLE_REGEX);
+            try {
+                Double.parseDouble(columnValue);
+            } catch (Exception e) {
+                columnValue = "";
+            }
         } else if (columnValueDatatype.equals(DataType.TEXT)) {
             columnValue = RegexUtil.getMatch(columnValue, CommonRegex.TEXT_REGEX);
 
@@ -60,37 +72,29 @@ public class ConstraintCheck
         return true;
     }
 
-    public static boolean checkForeignKeyConstraints(String tableName, List<String> uniqueIds,DatabaseSite databaseSite) {
-        List<TableInfo> tableInfoList = databaseSite.readLocalDataDictionary();
-        List<String> tableNameList = tableInfoList.stream().map(TableInfo::getTableName).collect(Collectors.toList());
+    public static boolean checkForeignKeyConstraints(String tableName, List<String> uniqueIds, DatabaseSite databaseSite) {
+        Map<String, DatabaseSite> gddMap = FileReader.readDistributedDataDictionary();
         List<Column> columnNameList;
-        tableNameList.remove(tableName);
+        gddMap.remove(tableName);
         //Dict for foreign key check w.r.t tables
-        HashMap<String, List<String>> checkTableExists = new HashMap<>();
-        for (String table : tableNameList) {
-            columnNameList = databaseSite.readMetadata(table);
+        for (String table : gddMap.keySet()) {
+            DatabaseSite tableDatabaseSite = gddMap.get(table);
+            columnNameList = tableDatabaseSite.readMetadata(table);
             for (Column column : columnNameList) {
                 if (column.getForeignKeyTable().equals(tableName)) {
-                    List<String> violatedIds = checkForeignKeyUniqueIds(uniqueIds, table, column,databaseSite);
+                    List<String> violatedIds = checkForeignKeyUniqueIds(uniqueIds, table, column, tableDatabaseSite);
                     if (!violatedIds.isEmpty()) {
-                        checkTableExists.put(table, violatedIds);
+                        LOGGER.error("Foreign Key constraint violated for table '{}' with column '{}' and value '{}'", table, column.getColumnName(), String.join(",", violatedIds));
+                        return true;
                     }
                 }
             }
-        }
-        if (!checkTableExists.keySet().isEmpty()) {
-            for (Map.Entry<String, List<String>> tableDetail : checkTableExists.entrySet()) {
-                if (!tableDetail.getValue().isEmpty()) {
-                    LOGGER.error("Foreign Key constraint for {} violated for keys {}", tableName, String.join(",", tableDetail.getValue()));
-                }
-            }
-            return true;
         }
 
         return false;
     }
 
-    private static List<String> checkForeignKeyUniqueIds(List<String> uniqueIds, String tableName, Column column,DatabaseSite databaseSite) {
+    private static List<String> checkForeignKeyUniqueIds(List<String> uniqueIds, String tableName, Column column, DatabaseSite databaseSite) {
         List<String> violatedIds = new ArrayList<>();
         List<String> fileLines = databaseSite.readData(tableName);
         fileLines.remove(0);
@@ -114,7 +118,7 @@ public class ConstraintCheck
         List<String> uniqueIds = new ArrayList<>();
         uniqueIds.add(uniqueId);
 
-        List<String> idsPresent = checkForeignKeyUniqueIds(uniqueIds, tableName, getPrimaryKeyColumns.get(0),databaseSite);
+        List<String> idsPresent = checkForeignKeyUniqueIds(uniqueIds, tableName, getPrimaryKeyColumns.get(0), databaseSite);
         return idsPresent.isEmpty();
 
     }
