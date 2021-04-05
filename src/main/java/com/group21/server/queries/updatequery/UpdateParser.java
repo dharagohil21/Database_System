@@ -143,6 +143,7 @@ public class UpdateParser {
                         nonConditionalLines.add(String.join(ApplicationConfiguration.DELIMITER, columnList));
                     }
                 }
+                int changedRows = fileLines.size() - conditionalFileLines.size();
 
                 conditionalFileLines.addAll(nonConditionalLines);
                 List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
@@ -152,7 +153,8 @@ public class UpdateParser {
                 for (String line : conditionalFileLines) {
                     databaseSite.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));
                 }
-                LOGGER.info("Update query executed successfully!");
+
+                LOGGER.info("{} rows updated successfully!", changedRows);
             }
         } catch (Exception exception) {
             LOGGER.info("Error occurred while updating the table!");
@@ -208,7 +210,8 @@ public class UpdateParser {
                     databaseSite.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));
                 }
 
-                LOGGER.info("Update query executed successfully!");
+                int changedRows = fileLines.size();
+                LOGGER.info("{} rows updated successfully!", changedRows);
             }
         } catch (Exception exception) {
             LOGGER.info("Error occurred while updating the table!");
