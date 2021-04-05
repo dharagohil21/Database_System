@@ -5,6 +5,8 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.QueryType;
 import com.group21.server.queries.createtable.CreateTableQueryExecutor;
 import com.group21.server.queries.deletequery.DeleteQueryExecutor;
@@ -12,6 +14,7 @@ import com.group21.server.queries.droptable.DropTableQueryExecutor;
 import com.group21.server.queries.insert.InsertQueryExecutor;
 import com.group21.server.queries.select.SelectQueryExecutor;
 import com.group21.server.queries.updatequery.UpdateQueryExecutor;
+import com.group21.utils.RemoteDatabaseReader;
 
 public class QueryProcessor {
 
@@ -22,6 +25,11 @@ public class QueryProcessor {
 
     public static void process(String query, boolean isAutoCommit) {
         query = query.toUpperCase();
+
+        if (ApplicationConfiguration.CURRENT_SITE == DatabaseSite.LOCAL) {
+            // This is done only for local as remote site can not access local machine
+            RemoteDatabaseReader.syncDistributedDataDictionary();
+        }
 
         long startTime = System.currentTimeMillis();
         LOGGER.debug("Execution started for query - '{}' on {}", query, new Date(startTime));

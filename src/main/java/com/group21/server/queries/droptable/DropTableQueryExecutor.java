@@ -34,9 +34,19 @@ public class DropTableQueryExecutor {
             if (gddMap.containsKey(tableName)) {
                 DatabaseSite databaseSite = gddMap.get(tableName);
 
-                databaseSite.deleteTable(tableName);
+                DatabaseSite databaseOperationSite = DatabaseSite.LOCAL;
+                if (databaseSite != ApplicationConfiguration.CURRENT_SITE) {
+                    databaseOperationSite = DatabaseSite.REMOTE;
+                }
 
-                updateLocalDataDictionary(tableName, databaseSite);
+                if (databaseOperationSite == DatabaseSite.REMOTE && ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
+                    LOGGER.error("Table '{}' is on LOCAL site & Remote server can not connect to local machine.", tableName);
+                    return;
+                }
+
+                databaseOperationSite.deleteTable(tableName);
+
+                updateLocalDataDictionary(tableName, databaseOperationSite);
 
                 gddMap.remove(tableName);
                 String updatedDistributedDictionaryContent = FileWriter.generateDistributedDataDictionaryContent(gddMap);

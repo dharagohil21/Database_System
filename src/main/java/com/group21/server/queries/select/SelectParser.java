@@ -122,7 +122,7 @@ public class SelectParser {
             }
 
             if (databaseOperationSite == DatabaseSite.REMOTE && ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
-                LOGGER.error("Can not read data from Remote (GCP) server to local server.");
+                LOGGER.error("Table '{}' is on LOCAL site & Remote server can not connect to local machine.", tableName);
                 return null;
             }
             return databaseOperationSite;

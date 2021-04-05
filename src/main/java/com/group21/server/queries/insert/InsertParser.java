@@ -1,5 +1,6 @@
 package com.group21.server.queries.insert;
 
+import com.group21.configurations.ApplicationConfiguration;
 import com.group21.constants.CommonRegex;
 import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
@@ -34,7 +35,6 @@ public class InsertParser {
         DatabaseSite databaseSite = getDatabaseSite(tableName);
 
         if (databaseSite == null) {
-            LOGGER.error("Table Name '{}' Does not exist ", tableName);
             return false;
         }
 
@@ -172,7 +172,12 @@ public class InsertParser {
                 Map<String, DatabaseSite> gddMap = FileReader.readDistributedDataDictionary();
                 DatabaseSite foreignKeyTableDatabaseSite = gddMap.get(foreignKeyTable);
 
-                List<String> foreignKeyValueList = foreignKeyTableDatabaseSite.readColumnData(foreignKeyTable, foreignKeyColumnName);
+                List<String> foreignKeyValueList = new ArrayList<>();
+                if (ApplicationConfiguration.CURRENT_SITE != DatabaseSite.REMOTE) {
+                    foreignKeyValueList = foreignKeyTableDatabaseSite.readColumnData(foreignKeyTable, foreignKeyColumnName);
+                } else if (foreignKeyTableDatabaseSite != DatabaseSite.LOCAL) {
+                    foreignKeyValueList = databaseSite.readColumnData(foreignKeyTable, foreignKeyColumnName);
+                }
 
                 if (!foreignKeyValueList.contains(columnValue)) {
                     LOGGER.error("Foreign Key Constraint Violated! Foreign Key '{}' Does not exist in '{}'", columnValue, foreignKeyTable);
@@ -189,7 +194,7 @@ public class InsertParser {
         return query.substring(tableNameStartIndex, tableNameEndIndex);
     }
 
-    public List<String> getColumnValues(String query, String tableName) {
+    public List<String> getColumnValues(String query, String tableName, DatabaseSite databaseSite) {
         String matchedQueryType2 = RegexUtil.getMatch(query, INSERT_REGEX_TYPE2);
 
         List<String> columnValues = new ArrayList<>();
@@ -199,8 +204,6 @@ public class InsertParser {
 
         String columnValueString = query.substring(firstColumnValueBracketIndex + 1, lastColumnValueBracketIndex);
         String[] columnValueArray = columnValueString.split(",");
-
-        DatabaseSite databaseSite = getDatabaseSite(tableName);
 
         List<Column> columnList = databaseSite.readMetadata(tableName);
         Map<String, DataType> columnNameType = new LinkedHashMap<>();
@@ -244,6 +247,22 @@ public class InsertParser {
 
     public DatabaseSite getDatabaseSite(String tableName) {
         Map<String, DatabaseSite> dataDictionary = FileReader.readDistributedDataDictionary();
-        return dataDictionary.get(tableName);
+        DatabaseSite databaseSite = dataDictionary.get(tableName);
+
+        if (databaseSite != null) {
+            DatabaseSite databaseOperationSite = DatabaseSite.LOCAL;
+            if (databaseSite != ApplicationConfiguration.CURRENT_SITE) {
+                databaseOperationSite = DatabaseSite.REMOTE;
+            }
+
+            if (databaseOperationSite == DatabaseSite.REMOTE && ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
+                LOGGER.error("Table '{}' is on LOCAL site & Remote server can not connect to local machine.", tableName);
+                return null;
+            }
+            return databaseOperationSite;
+        } else {
+            LOGGER.error("Table Name '{}' Does not exist ", tableName);
+            return null;
+        }
     }
 }

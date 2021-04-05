@@ -38,6 +38,11 @@ public class CreateTableQueryExecutor {
                 databaseOperationSite = DatabaseSite.REMOTE;
             }
 
+            if (databaseOperationSite == DatabaseSite.REMOTE && ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
+                LOGGER.error("Table '{}' is on LOCAL site & Remote server can not connect to local machine.", tableName);
+                return;
+            }
+
             List<Column> columns = createTableParser.getColumns(query);
 
             Map<String, DatabaseSite> tableInfoMap = FileReader.readDistributedDataDictionary();

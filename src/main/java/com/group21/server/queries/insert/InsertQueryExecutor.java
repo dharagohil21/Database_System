@@ -25,7 +25,7 @@ public class InsertQueryExecutor {
         if (isQueryValid) {
             String tableName = insertParser.getTableName(query);
             DatabaseSite databaseSite = insertParser.getDatabaseSite(tableName);
-            List<String> columnValues = insertParser.getColumnValues(query, tableName);
+            List<String> columnValues = insertParser.getColumnValues(query, tableName, databaseSite);
 
             if (isAutoCommit) {
                 databaseSite.writeData(tableName, columnValues);
