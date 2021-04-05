@@ -126,9 +126,20 @@ public class UpdateParser {
                 if (filteredSetColumns.get(0).getConstraint().getKeyword().equals("FOREIGN KEY")) {
                     String foreignKeyTableName = filteredSetColumns.get(0).getForeignKeyTable();
                     DatabaseSite foreignKeyTableDatabaseSite = gddMap.get(foreignKeyTableName);
-                    if (ConstraintCheck.checkPrimaryKeyConstraints(filteredSetColumns.get(0).getForeignKeyTable(), newValue, foreignKeyTableDatabaseSite)) {
-                        LOGGER.error("Foreign Key constraint violated! Foreign Key " + newValue + " Does not exist in " + filteredSetColumns.get(0).getForeignKeyTable());
-                        return;
+
+                    if (ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
+                        if (foreignKeyTableDatabaseSite == DatabaseSite.REMOTE) {
+                            foreignKeyTableDatabaseSite = DatabaseSite.LOCAL;
+                            if (ConstraintCheck.checkPrimaryKeyConstraints(filteredSetColumns.get(0).getForeignKeyTable(), newValue, foreignKeyTableDatabaseSite)) {
+                                LOGGER.error("Foreign Key constraint violated! Foreign Key " + newValue + " Does not exist in " + filteredSetColumns.get(0).getForeignKeyTable());
+                                return;
+                            }
+                        }
+                    } else {
+                        if (ConstraintCheck.checkPrimaryKeyConstraints(filteredSetColumns.get(0).getForeignKeyTable(), newValue, foreignKeyTableDatabaseSite)) {
+                            LOGGER.error("Foreign Key constraint violated! Foreign Key " + newValue + " Does not exist in " + filteredSetColumns.get(0).getForeignKeyTable());
+                            return;
+                        }
                     }
                 }
 
@@ -192,9 +203,19 @@ public class UpdateParser {
                     Map<String, DatabaseSite> gddMap = FileReader.readDistributedDataDictionary();
                     String foreignKeyTableName = filteredColumns.get(0).getForeignKeyTable();
                     DatabaseSite foreignKeyTableDatabaseSite = gddMap.get(foreignKeyTableName);
-                    if (ConstraintCheck.checkPrimaryKeyConstraints(foreignKeyTableName, newValue, foreignKeyTableDatabaseSite)) {
-                        LOGGER.error("Foreign Key constraint violated! Foreign Key " + newValue + " Does not exist in " + filteredColumns.get(0).getForeignKeyTable());
-                        return;
+                    if (ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
+                        if (foreignKeyTableDatabaseSite == DatabaseSite.REMOTE) {
+                            foreignKeyTableDatabaseSite = DatabaseSite.LOCAL;
+                            if (ConstraintCheck.checkPrimaryKeyConstraints(foreignKeyTableName, newValue, foreignKeyTableDatabaseSite)) {
+                                LOGGER.error("Foreign Key constraint violated! Foreign Key " + newValue + " Does not exist in " + filteredColumns.get(0).getForeignKeyTable());
+                                return;
+                            }
+                        }
+                    } else {
+                        if (ConstraintCheck.checkPrimaryKeyConstraints(foreignKeyTableName, newValue, foreignKeyTableDatabaseSite)) {
+                            LOGGER.error("Foreign Key constraint violated! Foreign Key " + newValue + " Does not exist in " + filteredColumns.get(0).getForeignKeyTable());
+                            return;
+                        }
                     }
                 }
 
