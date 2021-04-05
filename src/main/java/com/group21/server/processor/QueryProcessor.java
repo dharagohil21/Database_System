@@ -7,11 +7,11 @@ import org.slf4j.LoggerFactory;
 
 import com.group21.server.models.QueryType;
 import com.group21.server.queries.createtable.CreateTableQueryExecutor;
-import com.group21.server.queries.deleteQuery.DeleteQueryExecutor;
+import com.group21.server.queries.deletequery.DeleteQueryExecutor;
 import com.group21.server.queries.droptable.DropTableQueryExecutor;
 import com.group21.server.queries.insert.InsertQueryExecutor;
 import com.group21.server.queries.select.SelectQueryExecutor;
-import com.group21.server.queries.updateQuery.UpdateQueryExecutor;
+import com.group21.server.queries.updatequery.UpdateQueryExecutor;
 
 public class QueryProcessor {
 

@@ -5,6 +5,7 @@ logs/
 DDBMS_21_Data/
 
 *.class
+*.DS_Store
 
 # Package Files #
 *.jar

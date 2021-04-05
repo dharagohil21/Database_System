@@ -45,6 +45,21 @@ public enum DatabaseSite {
         }
 
         @Override
+        public List<String> readColumnMetadata(String tableName) {
+            return FileReader.readColumnMetadata(tableName);
+        }
+
+        @Override
+        public List<String> readData(String tableName) {
+            return FileReader.readData(tableName);
+        }
+
+        @Override
+        public void deleteOnlyTable(String tableName) {
+            FileWriter.deleteOnlyTable(tableName);
+        }
+
+        @Override
         public List<String> readColumnData(String tableName, String columnName) {
             return FileReader.readColumnData(tableName, columnName);
         }
@@ -91,6 +106,21 @@ public enum DatabaseSite {
         }
 
         @Override
+        public List<String> readColumnMetadata(String tableName) {
+            return RemoteDatabaseReader.readColumnMetadata(tableName);
+        }
+
+        @Override
+        public List<String> readData(String tableName) {
+            return RemoteDatabaseReader.readData(tableName);
+        }
+
+        @Override
+        public void deleteOnlyTable(String tableName) {
+            RemoteDatabaseWriter.deleteOnlyTable(tableName);
+        }
+
+        @Override
         public List<String> readColumnData(String tableName, String columnName) {
             return FileReader.readColumnData(tableName, columnName);
         }
@@ -100,15 +130,6 @@ public enum DatabaseSite {
             FileWriter.incrementRowCountInLocalDataDictionary(tableName);
         }
     };
-
-    public static DatabaseSite from(String siteName) {
-        for (DatabaseSite databaseSite : values()) {
-            if (databaseSite.name().equalsIgnoreCase(siteName)) {
-                return databaseSite;
-            }
-        }
-        return LOCAL;
-    }
 
     public abstract void writeFile(String fileName, String fileContent);
 
@@ -124,7 +145,22 @@ public enum DatabaseSite {
 
     public abstract void deleteTable(String tableName);
 
+    public abstract List<String> readColumnMetadata(String tableName);
+
+    public abstract List<String> readData(String tableName);
+
+    public abstract void deleteOnlyTable(String tableName);
+
     public abstract List<String> readColumnData(String tableName, String columnName);
 
     public abstract void incrementRowCountInLocalDataDictionary(String tableName);
+
+    public static DatabaseSite from(String siteName) {
+        for (DatabaseSite databaseSite : values()) {
+            if (databaseSite.name().equalsIgnoreCase(siteName)) {
+                return databaseSite;
+            }
+        }
+        return LOCAL;
+    }
 }

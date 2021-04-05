@@ -103,6 +103,24 @@ public class RemoteDatabaseReader {
         }
     }
 
+    public static List<String> readData(String tableName) {
+        String filePath = ApplicationConfiguration.REMOTE_DB_DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT;
+        List<String> fileLines = new ArrayList<>();
+        try {
+            ChannelSftp sftpChannel = RemoteDatabaseConnection.getSftpChannel();
+            InputStream stream = sftpChannel.get(filePath);
+
+            Path tempFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + UUID.randomUUID().toString() + ".tmp");
+            Files.copy(stream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            fileLines = Files.readAllLines(tempFile);
+
+            Files.deleteIfExists(tempFile);
+        } catch (Exception exception) {
+            LOGGER.error("Error occurred while reading metadata.");
+        }
+        return fileLines;
+    }
+
     public static List<Column> readMetadata(String tableName) {
         List<Column> columnInfoList = new ArrayList<>();
         try {
@@ -135,5 +153,31 @@ public class RemoteDatabaseReader {
             LOGGER.error("Error occurred while reading metadata.");
         }
         return columnInfoList;
+    }
+
+    public static List<String> readColumnMetadata(String tableName) {
+        List<String> columnNames = new ArrayList<>();
+        List<String> fileLines;
+        try {
+            String filePath = ApplicationConfiguration.REMOTE_DB_DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.METADATA_FILE_FORMAT;
+
+            ChannelSftp sftpChannel = RemoteDatabaseConnection.getSftpChannel();
+            InputStream stream = sftpChannel.get(filePath);
+
+            Path tempFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + UUID.randomUUID().toString() + ".tmp");
+            Files.copy(stream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            fileLines = Files.readAllLines(tempFile);
+            fileLines.remove(0);
+
+            for (String line : fileLines) {
+                String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+                columnNames.add(columnList[0]);
+            }
+
+            Files.deleteIfExists(tempFile);
+        } catch (Exception e) {
+            LOGGER.error("Error occurred while reading column name meta data");
+        }
+        return columnNames;
     }
 }

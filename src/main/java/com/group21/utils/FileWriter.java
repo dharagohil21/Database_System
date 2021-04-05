@@ -154,13 +154,23 @@ public class FileWriter {
 
     public static void deleteTable(String tableName) {
         try {
-            Path dataFile = Paths.get(ApplicationConfiguration.REMOTE_DB_DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT);
-            Path metadataFile = Paths.get(ApplicationConfiguration.REMOTE_DB_DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.METADATA_FILE_FORMAT);
+            Path dataFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT);
+            Path metadataFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.METADATA_FILE_FORMAT);
 
             Files.deleteIfExists(dataFile);
             Files.deleteIfExists(metadataFile);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while deleting table {} files.", tableName);
+        }
+    }
+
+    public static void deleteOnlyTable(String tableName) {
+        try {
+            Path dataFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT);
+
+            Files.deleteIfExists(dataFile);
+        } catch (Exception exception) {
+            LOGGER.error("Error occurred while deleting table {} file.", tableName);
         }
     }
 
