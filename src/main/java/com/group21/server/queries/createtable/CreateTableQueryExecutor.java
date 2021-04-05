@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
 import com.group21.server.models.DatabaseSite;
@@ -75,6 +76,8 @@ public class CreateTableQueryExecutor {
             FileWriter.writeDistributedDataDictionary(tableName, databaseSite);
 
             LOGGER.info("Table '{}' created Successfully.", tableName);
+
+            EventLogger.log("Table '" + tableName + "' created Successfully.");
         }
     }
 }

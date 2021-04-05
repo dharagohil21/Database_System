@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.Column;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
@@ -171,9 +172,12 @@ public class UpdateParser {
                 }
 
                 LOGGER.info("{} rows updated successfully!", changedRows);
+
+                EventLogger.log(changedRows + " rows updated successfully in table '" + tableInfo.getTableName() + "'");
             }
         } catch (Exception exception) {
             LOGGER.info("Error occurred while updating the table!");
+            EventLogger.error(exception.getMessage());
         }
 
     }
@@ -242,9 +246,12 @@ public class UpdateParser {
 
                 int changedRows = fileLines.size();
                 LOGGER.info("{} rows updated successfully!", changedRows);
+
+                EventLogger.log(changedRows + " rows updated successfully in table '" + tableInfo.getTableName() + "'");
             }
         } catch (Exception exception) {
             LOGGER.info("Error occurred while updating the table!");
+            EventLogger.error(exception.getMessage());
         }
     }
 }

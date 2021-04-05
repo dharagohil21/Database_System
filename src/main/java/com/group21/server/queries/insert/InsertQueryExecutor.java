@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.DatabaseSite;
 import com.group21.utils.FileWriter;
 
@@ -35,6 +36,8 @@ public class InsertQueryExecutor {
             }
 
             LOGGER.info("1 row inserted successfully!");
+
+            EventLogger.log("1 row inserted successfully in table '" + tableName + "'");
         }
     }
 }

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
 import com.group21.server.models.DatabaseSite;
@@ -89,9 +90,12 @@ public class DeleteParser {
                 int deletedRows = fileLines.size();
                 databaseSite.decrementRowCountInLocalDataDictionary(tableInfo.getTableName(), deletedRows);
                 LOGGER.info("{} rows delete successfully!", deletedRows);
+
+                EventLogger.log(deletedRows + " rows delete successfully from table '" + tableInfo.getTableName() + "'");
             }
         } catch (Exception e) {
             LOGGER.error("Error occurred while deleting the table");
+            EventLogger.error(e.getMessage());
         }
         return true;
     }
@@ -156,10 +160,13 @@ public class DeleteParser {
                     int deletedRows = fileLines.size() - lineIds.size();
                     databaseSite.decrementRowCountInLocalDataDictionary(tableInfo.getTableName(), deletedRows);
                     LOGGER.info("{} rows delete successfully!", deletedRows);
+
+                    EventLogger.log(deletedRows + " rows delete successfully from table '" + tableInfo.getTableName() + "'");
                 }
             }
         } catch (Exception e) {
             LOGGER.error("Error occurred while deleting the table");
+            EventLogger.error(e.getMessage());
         }
         return true;
     }

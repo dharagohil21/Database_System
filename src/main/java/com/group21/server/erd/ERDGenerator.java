@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
 import com.group21.server.models.DatabaseSite;
@@ -76,6 +77,7 @@ public class ERDGenerator {
             LOGGER.info("ERD file '{}' generated successfully.", ApplicationConfiguration.ERD_FILE_NAME);
         } catch (IOException exception) {
             LOGGER.info("Error occurred while generating ER Diagram.");
+            EventLogger.error(exception.getMessage());
         }
     }
 }

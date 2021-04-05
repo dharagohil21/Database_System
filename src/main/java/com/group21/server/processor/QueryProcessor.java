@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
+import com.group21.server.logger.GeneralLogger;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.QueryType;
 import com.group21.server.queries.createtable.CreateTableQueryExecutor;
@@ -33,6 +35,7 @@ public class QueryProcessor {
         }
 
         long startTime = System.currentTimeMillis();
+        EventLogger.log("Execution started for query - '" + query + "'");
         LOGGER.debug("Execution started for query - '{}' on {}", query, new Date(startTime));
         QueryType queryType = QueryType.from(query);
 
@@ -74,5 +77,10 @@ public class QueryProcessor {
         LOGGER.debug("Execution completed for query - '{}' on {}", query, new Date(endTime));
         LOGGER.debug("Total execution time for query - '{}' is {}ms.", query, (endTime - startTime));
         LOGGER.info("Query executed in {}ms.", (endTime - startTime));
+
+        EventLogger.log("Execution completed for query - '" + query + "'");
+
+        GeneralLogger.log("Query '" + query + "' executed in " + (endTime - startTime) + "ms");
+        GeneralLogger.logDatabaseState();
     }
 }

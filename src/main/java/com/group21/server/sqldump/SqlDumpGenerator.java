@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
 import com.group21.server.models.DataType;
@@ -97,6 +98,7 @@ public class SqlDumpGenerator {
 			 LOGGER.info("SqlDump file '{}' generated successfully.", ApplicationConfiguration.SQL_DUMP_FILE_NAME);
         } catch (IOException exception) {
             LOGGER.info("Error occurred while generating Sql Ddump.");
+			EventLogger.error(exception.getMessage());
         } 
 	}
 }

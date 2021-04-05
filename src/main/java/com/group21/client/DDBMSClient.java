@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
 import com.group21.server.authentication.Authentication;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.processor.QueryProcessor;
 import com.group21.server.erd.ERDGenerator;
@@ -134,6 +135,7 @@ public class DDBMSClient {
                 LOGGER.info("");
             } catch (Exception e) {
                 LOGGER.error("Error occurred while execution : ", e);
+                EventLogger.error(e.getMessage());
                 return;
             }
         }
