@@ -22,6 +22,7 @@ public class DDBMSSetup {
         Path dataDirectoryPath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY);
         Path localDDPath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.LOCAL_DATA_DICTIONARY_NAME);
         Path distributedDDPath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.DISTRIBUTED_DATA_DICTIONARY_NAME);
+        Path transactionFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.TRANSACTION_FILE_NAME);
         try {
             if (Files.notExists(dataDirectoryPath)) {
                 Files.createDirectory(dataDirectoryPath);
@@ -39,6 +40,10 @@ public class DDBMSSetup {
 
                 String headerRow = "TableName|DatabaseSite" + ApplicationConfiguration.NEW_LINE;
                 Files.write(distributedDDPath, headerRow.getBytes());
+            }
+
+            if (Files.notExists(transactionFilePath)) {
+                Files.createFile(transactionFilePath);
             }
 
             RemoteDatabaseReader.syncDistributedDataDictionary();

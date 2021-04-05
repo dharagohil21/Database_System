@@ -15,6 +15,7 @@ import com.group21.server.models.Constraint;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
 import com.group21.server.queries.constraints.ConstraintCheck;
+import com.group21.utils.FileWriter;
 import com.group21.utils.RegexUtil;
 
 public class DeleteParser {
@@ -50,7 +51,7 @@ public class DeleteParser {
         }
     }
 
-    public boolean deleteTable(TableInfo tableInfo, DatabaseSite databaseSite) {
+    public boolean deleteTable(TableInfo tableInfo, String query, DatabaseSite databaseSite, boolean isAutoCommit) {
         try {
             List<String> fileLines = databaseSite.readData(tableInfo.getTableName());
             List<String> uniqueIds = new ArrayList<>();
@@ -76,16 +77,19 @@ public class DeleteParser {
             }
 
             if (uniqueIds.isEmpty() || !ConstraintCheck.checkForeignKeyConstraints(tableInfo.getTableName(), uniqueIds, databaseSite)) {
-                databaseSite.deleteOnlyTable(tableInfo.getTableName());
-                //No Constraints
-                List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
-                databaseSite.writeData(tableInfo.getTableName(), columnNames);
+                if (isAutoCommit) {
+                    databaseSite.deleteOnlyTable(tableInfo.getTableName());
+                    //No Constraints
+                    List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
+                    databaseSite.writeData(tableInfo.getTableName(), columnNames);
+                } else {
+                    FileWriter.writeTransactionFile(query);
+                }
 
                 int deletedRows = fileLines.size();
                 databaseSite.decrementRowCountInLocalDataDictionary(tableInfo.getTableName(), deletedRows);
                 LOGGER.info("{} rows delete successfully!", deletedRows);
             }
-
         } catch (Exception e) {
             LOGGER.error("Error occurred while deleting the table");
         }
@@ -98,10 +102,9 @@ public class DeleteParser {
         return splitByWhere[1].trim().split(" ");
     }
 
-    public boolean deleteTableWhere(TableInfo tableInfo, String query, DatabaseSite databaseSite) {
+    public boolean deleteTableWhere(TableInfo tableInfo, String query, DatabaseSite databaseSite, boolean isAutoCommit) {
         String[] whereParameters = getWhereParameters(query);
         List<String> fileLines;
-        List<String> writeFileLines = new ArrayList<>();
         List<String> uniqueIds = new ArrayList<>();
         List<String> lineIds = new ArrayList<>();
 
@@ -139,15 +142,18 @@ public class DeleteParser {
                 }
 
                 if (uniqueIds.isEmpty() || !ConstraintCheck.checkForeignKeyConstraints(tableInfo.getTableName(), uniqueIds, databaseSite)) {
-                    databaseSite.deleteOnlyTable(tableInfo.getTableName());
-                    databaseSite.writeData(tableInfo.getTableName(), databaseSite.readColumnMetadata(tableInfo.getTableName()));
-                    //No Constraints
-                    for (String line : lineIds) {
-                        writeFileLines.add(line);
-                        databaseSite.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));
+                    if (isAutoCommit) {
+                        databaseSite.deleteOnlyTable(tableInfo.getTableName());
+                        databaseSite.writeData(tableInfo.getTableName(), databaseSite.readColumnMetadata(tableInfo.getTableName()));
+                        //No Constraints
+                        for (String line : lineIds) {
+                            databaseSite.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));
+                        }
+                    } else {
+                        FileWriter.writeTransactionFile(query);
                     }
 
-                    int deletedRows = fileLines.size() - writeFileLines.size();
+                    int deletedRows = fileLines.size() - lineIds.size();
                     databaseSite.decrementRowCountInLocalDataDictionary(tableInfo.getTableName(), deletedRows);
                     LOGGER.info("{} rows delete successfully!", deletedRows);
                 }

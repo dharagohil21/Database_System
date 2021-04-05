@@ -9,6 +9,8 @@ import com.group21.server.authentication.Authentication;
 import com.group21.server.processor.QueryProcessor;
 import com.group21.server.queries.erd.ERDGenerator;
 import com.group21.server.sqlDump.SqlDumpGenerator;
+import com.group21.server.transaction.CommitConfiguration;
+import com.group21.server.transaction.TransactionExecutor;
 import com.group21.utils.RemoteDatabaseConnection;
 import com.group21.utils.RemoteDatabaseWriter;
 
@@ -54,10 +56,18 @@ public class DDBMSClient {
                 String userInput = scanner.nextLine();
                 String command;
 
+                CommitConfiguration commitConfiguration = CommitConfiguration.getInstance();
+
                 if (userInput.matches("^export sqldump;?")) {
                     command = "sqldump";
                 } else if (userInput.matches("^export erd;?$")) {
                     command = "erd";
+                }  else if (userInput.matches("^set auto_commit = (true|false)")) {
+                    command = "set auto_commit";
+                } else if (userInput.equals("commit")) {
+                    command = "commit";
+                } else if (userInput.equals("rollback")) {
+                    command = "rollback";
                 } else {
                     command = userInput.trim();
                 }
@@ -67,10 +77,13 @@ public class DDBMSClient {
                         break;
                     case "help":
                         LOGGER.info("Below are some available options:");
-                        LOGGER.info("\texport sqldump  - To get table structure DDLs");
-                        LOGGER.info("\texport erd      - To get Textual ER Diagram");
-                        LOGGER.info("\tValid SQL Query - To execute valid SQL queries");
-                        LOGGER.info("\texit            - To exit DDBMS client");
+                        LOGGER.info("\texport sqldump               - To get table structure DDLs");
+                        LOGGER.info("\texport erd                   - To get Textual ER Diagram");
+                        LOGGER.info("\tValid SQL Query              - To execute valid SQL queries");
+                        LOGGER.info("\texit                         - To exit DDBMS client");
+                        LOGGER.info("\tset auto_commit = true/false - To change auto commit flag (Default - true)");
+                        LOGGER.info("\tcommit                       - To commit transaction");
+                        LOGGER.info("\trollback                     - To rollback transaction");
                         break;
                     case "sqldump":
                         SqlDumpGenerator.generate();
@@ -79,11 +92,32 @@ public class DDBMSClient {
                         ERDGenerator.generate();
                         break;
                     case "exit":
+                        if (!commitConfiguration.isAutoCommitValue()) {
+                            TransactionExecutor.rollbackTransaction();
+                        }
+
                         RemoteDatabaseConnection.closeSession();
                         System.exit(0);
                         return;
+                    case "set auto_commit":
+                        commitConfiguration.setAutoCommitValue(userInput);
+                        break;
+                    case "commit":
+                        if (!commitConfiguration.isAutoCommitValue()) {
+                            TransactionExecutor.executeTransaction();
+                        } else {
+                            LOGGER.info("Nothing to commit as auto commit is already on!");
+                        }
+                        break;
+                    case "rollback":
+                        if (!commitConfiguration.isAutoCommitValue()) {
+                            TransactionExecutor.rollbackTransaction();
+                        } else {
+                            LOGGER.info("Nothing to commit as auto commit is already on!");
+                        }
+                        break;
                     default:
-                        QueryProcessor.process(command);
+                        QueryProcessor.process(command, commitConfiguration.isAutoCommitValue());
                         RemoteDatabaseWriter.syncDistributedDataDictionary();
                         break;
                 }

@@ -186,4 +186,15 @@ public class FileReader {
         }
         return columnDataList;
     }
+
+    public static List<String> readTransactionFile() {
+        List<String> queries = null;
+        try {
+            Path transactionFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.TRANSACTION_FILE_NAME);
+            queries = Files.readAllLines(transactionFile);
+        } catch (IOException exception) {
+            LOGGER.error("Error occurred while writing to distributed data dictionary.");
+        }
+        return queries;
+    }
 }

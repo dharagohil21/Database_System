@@ -17,6 +17,7 @@ import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
 import com.group21.server.queries.constraints.ConstraintCheck;
 import com.group21.utils.FileReader;
+import com.group21.utils.FileWriter;
 import com.group21.utils.RegexUtil;
 
 public class UpdateParser {
@@ -63,7 +64,7 @@ public class UpdateParser {
         return splitByWhere[1].trim().split(" ");
     }
 
-    public void updateTableWhere(TableInfo tableInfo, String query, DatabaseSite databaseSite) {
+    public void updateTableWhere(TableInfo tableInfo, String query, DatabaseSite databaseSite, boolean isAutoCommit) {
         Map<String, DatabaseSite> gddMap = FileReader.readDistributedDataDictionary();
         String[] whereParameters = getWhereParameters(query);
         String[] setParameters = getSetParameters(query);
@@ -146,12 +147,16 @@ public class UpdateParser {
                 int changedRows = conditionalFileLines.size();
 
                 conditionalFileLines.addAll(nonConditionalLines);
-                List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
-                databaseSite.deleteOnlyTable(tableInfo.getTableName());
-                databaseSite.writeData(tableInfo.getTableName(), columnNames);
+                if (isAutoCommit) {
+                    List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
+                    databaseSite.deleteOnlyTable(tableInfo.getTableName());
+                    databaseSite.writeData(tableInfo.getTableName(), columnNames);
 
-                for (String line : conditionalFileLines) {
-                    databaseSite.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));
+                    for (String line : conditionalFileLines) {
+                        databaseSite.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));
+                    }
+                } else {
+                    FileWriter.writeTransactionFile(query);
                 }
 
                 LOGGER.info("{} rows updated successfully!", changedRows);
@@ -162,7 +167,7 @@ public class UpdateParser {
 
     }
 
-    public void updateTable(TableInfo tableInfo, String query, DatabaseSite databaseSite) {
+    public void updateTable(TableInfo tableInfo, String query, DatabaseSite databaseSite, boolean isAutoCommit) {
         String[] setParameters = getSetParameters(query);
         String newValue = setParameters[2].replace(";", "");
         try {
@@ -193,21 +198,25 @@ public class UpdateParser {
                     }
                 }
 
-                for (String line : fileLines) {
-                    String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
-                    //For replacement
-                    newValue = newValue.replace("'", "");
+                if (isAutoCommit) {
+                    for (String line : fileLines) {
+                        String[] columnList = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+                        //For replacement
+                        newValue = newValue.replace("'", "");
 
-                    columnList[headerIndex] = newValue;
-                    writeFileLines.add(String.join(ApplicationConfiguration.DELIMITER, columnList));
-                }
+                        columnList[headerIndex] = newValue;
+                        writeFileLines.add(String.join(ApplicationConfiguration.DELIMITER, columnList));
+                    }
 
-                List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
-                databaseSite.deleteOnlyTable(tableInfo.getTableName());
-                databaseSite.writeData(tableInfo.getTableName(), columnNames);
+                    List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
+                    databaseSite.deleteOnlyTable(tableInfo.getTableName());
+                    databaseSite.writeData(tableInfo.getTableName(), columnNames);
 
-                for (String line : writeFileLines) {
-                    databaseSite.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));
+                    for (String line : writeFileLines) {
+                        databaseSite.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));
+                    }
+                } else {
+                    FileWriter.writeTransactionFile(query);
                 }
 
                 int changedRows = fileLines.size();

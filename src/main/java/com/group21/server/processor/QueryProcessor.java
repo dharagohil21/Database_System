@@ -20,7 +20,7 @@ public class QueryProcessor {
     private QueryProcessor() {
     }
 
-    public static void process(String query) {
+    public static void process(String query, boolean isAutoCommit) {
         query = query.toUpperCase();
 
         long startTime = System.currentTimeMillis();
@@ -34,15 +34,15 @@ public class QueryProcessor {
                 break;
             case UPDATE:
                 UpdateQueryExecutor updateQueryExecutor = new UpdateQueryExecutor();
-                updateQueryExecutor.execute(query);
+                updateQueryExecutor.execute(query, isAutoCommit);
                 break;
             case DELETE:
                 DeleteQueryExecutor deleteQueryExecutor = new DeleteQueryExecutor();
-                deleteQueryExecutor.execute(query);
+                deleteQueryExecutor.execute(query, isAutoCommit);
                 break;
             case INSERT:
                 InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor();
-                insertQueryExecutor.execute(query);
+                insertQueryExecutor.execute(query, isAutoCommit);
                 break;
             case SELECT:
                 SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor();

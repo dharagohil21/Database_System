@@ -222,4 +222,14 @@ public class FileWriter {
         }
         return tableInfoDetails.toString();
     }
+
+    public static void writeTransactionFile(String query) {
+        try {
+            String fileContent = query + ApplicationConfiguration.NEW_LINE;
+            Path transactionFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.TRANSACTION_FILE_NAME);
+            Files.write(transactionFile, fileContent.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException exception) {
+            LOGGER.error("Error occurred while writing to distributed data dictionary.");
+        }
+    }
 }
