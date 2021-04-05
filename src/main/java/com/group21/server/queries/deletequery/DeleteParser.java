@@ -81,8 +81,9 @@ public class DeleteParser {
                 List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
                 databaseSite.writeData(tableInfo.getTableName(), columnNames);
 
-                int changedRows = fileLines.size();
-                LOGGER.info("{} rows delete successfully!", changedRows);
+                int deletedRows = fileLines.size();
+                databaseSite.decrementRowCountInLocalDataDictionary(tableInfo.getTableName(), deletedRows);
+                LOGGER.info("{} rows delete successfully!", deletedRows);
             }
 
         } catch (Exception e) {
@@ -146,8 +147,9 @@ public class DeleteParser {
                         databaseSite.writeData(tableInfo.getTableName(), Arrays.asList(line.split(ApplicationConfiguration.DELIMITER_REGEX)));
                     }
 
-                    int changedRows = fileLines.size() - writeFileLines.size();
-                    LOGGER.info("{} rows delete successfully!", changedRows);
+                    int deletedRows = fileLines.size() - writeFileLines.size();
+                    databaseSite.decrementRowCountInLocalDataDictionary(tableInfo.getTableName(), deletedRows);
+                    LOGGER.info("{} rows delete successfully!", deletedRows);
                 }
             }
         } catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.group21.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -179,5 +180,43 @@ public class RemoteDatabaseReader {
             LOGGER.error("Error occurred while reading column name meta data");
         }
         return columnNames;
+    }
+
+    public static List<String> readColumnData(String tableName, String columnName) {
+        List<String> columnDataList = new ArrayList<>();
+        try {
+            String filePath = ApplicationConfiguration.REMOTE_DB_DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT;
+
+            ChannelSftp sftpChannel = RemoteDatabaseConnection.getSftpChannel();
+            InputStream stream = sftpChannel.get(filePath);
+
+            Path tempFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + UUID.randomUUID().toString() + ".tmp");
+            Files.copy(stream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            List<String> fileLines = Files.readAllLines(tempFile);
+            fileLines.remove(0);
+
+            int index = 0;
+            String firstLine = fileLines.get(0);
+            String[] firstLineArray = firstLine.split(ApplicationConfiguration.DELIMITER_REGEX);
+
+            for (int i = 0; i < firstLineArray.length; i++) {
+                if (columnName.equals(firstLineArray[i])) {
+                    index = i;
+                    break;
+                }
+            }
+
+            fileLines.remove(0);
+
+            for (String line : fileLines) {
+                String[] columnData = line.split(ApplicationConfiguration.DELIMITER_REGEX);
+                columnDataList.add(columnData[index]);
+            }
+
+            Files.deleteIfExists(tempFile);
+        } catch (IOException | SftpException exception) {
+            LOGGER.error("Error occurred while reading column data.");
+        }
+        return columnDataList;
     }
 }

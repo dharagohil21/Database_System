@@ -58,6 +58,21 @@ public enum DatabaseSite {
         public void deleteOnlyTable(String tableName) {
             FileWriter.deleteOnlyTable(tableName);
         }
+
+        @Override
+        public List<String> readColumnData(String tableName, String columnName) {
+            return FileReader.readColumnData(tableName, columnName);
+        }
+
+        @Override
+        public void incrementRowCountInLocalDataDictionary(String tableName) {
+            FileWriter.incrementRowCountInLocalDataDictionary(tableName);
+        }
+
+        @Override
+        public void decrementRowCountInLocalDataDictionary(String tableName, int count) {
+            FileWriter.decrementRowCountInLocalDataDictionary(tableName, count);
+        }
     },
     REMOTE {
         @Override
@@ -109,6 +124,21 @@ public enum DatabaseSite {
         public void deleteOnlyTable(String tableName) {
             RemoteDatabaseWriter.deleteOnlyTable(tableName);
         }
+
+        @Override
+        public List<String> readColumnData(String tableName, String columnName) {
+            return RemoteDatabaseReader.readColumnData(tableName, columnName);
+        }
+
+        @Override
+        public void incrementRowCountInLocalDataDictionary(String tableName) {
+            RemoteDatabaseWriter.incrementRowCountInLocalDataDictionary(tableName);
+        }
+
+        @Override
+        public void decrementRowCountInLocalDataDictionary(String tableName, int count) {
+            RemoteDatabaseWriter.decrementRowCountInLocalDataDictionary(tableName, count);
+        }
     };
 
     public abstract void writeFile(String fileName, String fileContent);
@@ -130,6 +160,12 @@ public enum DatabaseSite {
     public abstract List<String> readData(String tableName);
 
     public abstract void deleteOnlyTable(String tableName);
+
+    public abstract List<String> readColumnData(String tableName, String columnName);
+
+    public abstract void incrementRowCountInLocalDataDictionary(String tableName);
+
+    public abstract void decrementRowCountInLocalDataDictionary(String tableName, int count);
 
     public static DatabaseSite from(String siteName) {
         for (DatabaseSite databaseSite : values()) {
