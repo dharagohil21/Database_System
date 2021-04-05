@@ -1,4 +1,4 @@
-package com.group21.server.queries.erd;
+package com.group21.server.erd;
 
 import java.io.IOException;
 import java.nio.file.Files;

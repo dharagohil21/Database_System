@@ -1,4 +1,4 @@
-package com.group21.server.queries.deletequery;
+package com.group21.server.queries.delete;
 
 import java.util.ArrayList;
 import java.util.Arrays;

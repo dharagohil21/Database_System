@@ -1,4 +1,4 @@
-package com.group21.server.queries.updatequery;
+package com.group21.server.queries.update;
 
 import java.util.List;
 import java.util.Map;

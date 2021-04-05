@@ -1,4 +1,4 @@
-package com.group21.server.sqlDump;
+package com.group21.server.sqldump;
 
 import java.io.IOException;
 import java.nio.file.Files;

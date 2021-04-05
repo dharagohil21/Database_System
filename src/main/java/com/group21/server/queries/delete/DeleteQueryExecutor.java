@@ -1,4 +1,4 @@
-package com.group21.server.queries.deletequery;
+package com.group21.server.queries.delete;
 
 import java.util.List;
 import java.util.Map;
