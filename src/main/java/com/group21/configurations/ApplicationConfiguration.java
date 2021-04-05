@@ -22,7 +22,7 @@ public class ApplicationConfiguration {
     public static final String TRANSACTION_FILE_NAME = "transaction.txt";
 
     // Remote Database configuration
-    public static final String REMOTE_DB_DATA_DIRECTORY = "/home/kartik_gevariya0003/csci-5408-group-21/DDBMS_21_Data";
+    public static final String REMOTE_DB_DATA_DIRECTORY = "/home/kartik_gevariya0003/group21/csci-5408-group-21/DDBMS_21_Data";
     public static final String REMOTE_DB_USER = "kartik_gevariya0003";
     public static final String REMOTE_DB_HOST = "35.223.217.30";
     public static final String PRIVATE_KEY_FILE_PATH = "/Users/kartikgevariya/.ssh/id_rsa_gcp";

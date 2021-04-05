@@ -38,7 +38,6 @@ public class SelectParser {
         DatabaseSite databaseSite = getDatabaseSite(tableName);
 
         if (databaseSite == null) {
-            LOGGER.error("Table Name '{}' Does not exist ", tableName);
             return false;
         }
 
@@ -124,10 +123,13 @@ public class SelectParser {
 
             if (databaseOperationSite == DatabaseSite.REMOTE && ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
                 LOGGER.error("Can not read data from Remote (GCP) server to local server.");
+                return null;
             }
             return databaseOperationSite;
+        } else {
+            LOGGER.error("Table Name '{}' Does not exist ", tableName);
+            return null;
         }
-        return null;
     }
 
     public List<String> getColumns(String query, DatabaseSite databaseSite) {
