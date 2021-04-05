@@ -7,7 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import com.group21.server.authentication.Authentication;
 import com.group21.server.processor.QueryProcessor;
-import com.group21.utils.RegexUtil;
+import com.group21.server.queries.erd.ERDGenerator;
+import com.group21.server.sqlDump.SqlDumpGenerator;
 import com.group21.utils.RemoteDatabaseConnection;
 import com.group21.utils.RemoteDatabaseWriter;
 
@@ -40,6 +41,7 @@ public class DDBMSClient {
 
         if (!isValidUser) {
             LOGGER.error("Invalid username or password.");
+            System.exit(0);
             return;
         }
 
@@ -52,9 +54,9 @@ public class DDBMSClient {
                 String userInput = scanner.nextLine();
                 String command;
 
-                if (userInput.matches("^sqldump [^\\s?]+$")) {
+                if (userInput.matches("^export sqldump;?")) {
                     command = "sqldump";
-                } else if (userInput.matches("^erd [^\\s?]+$")) {
+                } else if (userInput.matches("^export erd;?$")) {
                     command = "erd";
                 } else {
                     command = userInput.trim();
@@ -65,16 +67,16 @@ public class DDBMSClient {
                         break;
                     case "help":
                         LOGGER.info("Below are some available options:");
-                        LOGGER.info("\tsqldump <DATABASE_NAME>  - To get table structure DDLs");
-                        LOGGER.info("\terd <DATABASE_NAME>      - To get Textual ER Diagram");
-                        LOGGER.info("\tValid SQL Query          - To execute valid SQL queries");
-                        LOGGER.info("\texit                     - To exit DDBMS client");
+                        LOGGER.info("\texport sqldump  - To get table structure DDLs");
+                        LOGGER.info("\texport erd      - To get Textual ER Diagram");
+                        LOGGER.info("\tValid SQL Query - To execute valid SQL queries");
+                        LOGGER.info("\texit            - To exit DDBMS client");
                         break;
                     case "sqldump":
-                        LOGGER.info("SQL Dump for databse - {} exported successfully.", RegexUtil.getMatch(userInput, "[^sqldump ][^\\s?]+"));
+                        SqlDumpGenerator.generate();
                         break;
                     case "erd":
-                        LOGGER.info("ERD for database - {} generated successfully.", RegexUtil.getMatch(userInput, "[^erd ][^\\s?]+"));
+                        ERDGenerator.generate();
                         break;
                     case "exit":
                         RemoteDatabaseConnection.closeSession();

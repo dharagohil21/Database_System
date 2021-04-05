@@ -6,5 +6,5 @@ public class CommonRegex {
 
     public static final String INTEGER_REGEX = "[0-9]+";
     public static final String DOUBLE_REGEX = "[0-9]+(\\.[0-9]+)";
-    public static final String TEXT_REGEX = "[a-zA-Z_]+";
+    public static final String TEXT_REGEX = "\\'[a-zA-Z_]+\\'";
 }

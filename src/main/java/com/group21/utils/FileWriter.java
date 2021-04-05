@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
 import org.apache.logging.log4j.util.Strings;
@@ -23,6 +24,20 @@ public class FileWriter {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileWriter.class);
 
     private FileWriter() {
+    }
+
+    public static void writeFile(String fileName, String fileContent) {
+        try {
+            Path filePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + fileName);
+
+            if (Files.notExists(filePath)) {
+                Files.createFile(filePath);
+            }
+
+            Files.write(filePath, fileContent.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (Exception exception) {
+            LOGGER.error("Error occurred while writing file {}.", fileName);
+        }
     }
 
     public static void writeMetadata(String tableName, List<Column> columnDetails) {
@@ -118,7 +133,7 @@ public class FileWriter {
     public static void incrementRowCountInLocalDataDictionary(String tableName) {
         List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
         List<String> tableNameList = new ArrayList<>();
-        for(TableInfo tableInfo1: tableInfoList) {
+        for (TableInfo tableInfo1 : tableInfoList) {
             tableNameList.add(tableInfo1.getTableName());
         }
         TableInfo tableInfo = tableInfoList.get(tableNameList.indexOf(tableName));
@@ -129,12 +144,82 @@ public class FileWriter {
         String headerRow = "TableName|NumberOfRows|CreatedOn" + ApplicationConfiguration.NEW_LINE;
         try {
             Files.write(localDDPath, headerRow.getBytes());
-        }
-        catch (IOException exception) {
+        } catch (IOException exception) {
             LOGGER.error("Error occurred while creating data directory.");
         }
-        for (TableInfo tableInfo2: tableInfoList) {
+        for (TableInfo tableInfo2 : tableInfoList) {
             writeLocalDataDictionary(tableInfo2);
         }
+    }
+
+    public static void decrementRowCountInLocalDataDictionary(String tableName, int count) {
+        List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
+        List<String> tableNameList = new ArrayList<>();
+        for (TableInfo tableInfo1 : tableInfoList) {
+            tableNameList.add(tableInfo1.getTableName());
+        }
+        TableInfo tableInfo = tableInfoList.get(tableNameList.indexOf(tableName));
+        int rows = tableInfo.getNumberOfRows() - count;
+        tableInfo.setNumberOfRows(rows);
+        tableInfoList.set(tableNameList.indexOf(tableName), tableInfo);
+        Path localDDPath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.LOCAL_DATA_DICTIONARY_NAME);
+        String headerRow = "TableName|NumberOfRows|CreatedOn" + ApplicationConfiguration.NEW_LINE;
+        try {
+            Files.write(localDDPath, headerRow.getBytes());
+        } catch (IOException exception) {
+            LOGGER.error("Error occurred while creating data directory.");
+        }
+        for (TableInfo tableInfo2 : tableInfoList) {
+            writeLocalDataDictionary(tableInfo2);
+        }
+    }
+
+    public static void deleteTable(String tableName) {
+        try {
+            Path dataFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT);
+            Path metadataFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.METADATA_FILE_FORMAT);
+
+            Files.deleteIfExists(dataFile);
+            Files.deleteIfExists(metadataFile);
+        } catch (Exception exception) {
+            LOGGER.error("Error occurred while deleting table {} files.", tableName);
+        }
+    }
+
+    public static void deleteOnlyTable(String tableName) {
+        try {
+            Path dataFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT);
+
+            Files.deleteIfExists(dataFile);
+        } catch (Exception exception) {
+            LOGGER.error("Error occurred while deleting table {} file.", tableName);
+        }
+    }
+
+    public static String generateLocalDataDictionaryContent(List<TableInfo> tableInfoList) {
+        String headerRow = "TableName|NumberOfRows|CreatedOn" + ApplicationConfiguration.NEW_LINE;
+        StringBuilder tableInfoDetails = new StringBuilder(headerRow);
+        for (TableInfo tableInfo : tableInfoList) {
+            StringJoiner tableInfoJoiner = new StringJoiner(ApplicationConfiguration.DELIMITER);
+            tableInfoJoiner.add(tableInfo.getTableName());
+            tableInfoJoiner.add(String.valueOf(tableInfo.getNumberOfRows()));
+            tableInfoJoiner.add(String.valueOf(tableInfo.getCreatedOn()));
+
+            tableInfoDetails.append(tableInfoJoiner.toString()).append(ApplicationConfiguration.NEW_LINE);
+        }
+        return tableInfoDetails.toString();
+    }
+
+    public static String generateDistributedDataDictionaryContent(Map<String, DatabaseSite> gddMap) {
+        String headerRow = "TableName|DatabaseSite" + ApplicationConfiguration.NEW_LINE;
+        StringBuilder tableInfoDetails = new StringBuilder(headerRow);
+        for (String tableName : gddMap.keySet()) {
+            StringJoiner gddInfoJoiner = new StringJoiner(ApplicationConfiguration.DELIMITER);
+            gddInfoJoiner.add(tableName);
+            gddInfoJoiner.add(gddMap.get(tableName).name());
+
+            tableInfoDetails.append(gddInfoJoiner.toString()).append(ApplicationConfiguration.NEW_LINE);
+        }
+        return tableInfoDetails.toString();
     }
 }
