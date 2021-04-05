@@ -193,7 +193,6 @@ public class RemoteDatabaseReader {
             Path tempFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + UUID.randomUUID().toString() + ".tmp");
             Files.copy(stream, tempFile, StandardCopyOption.REPLACE_EXISTING);
             List<String> fileLines = Files.readAllLines(tempFile);
-            fileLines.remove(0);
 
             int index = 0;
             String firstLine = fileLines.get(0);

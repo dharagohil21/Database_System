@@ -1,5 +1,6 @@
 package com.group21.server.queries.select;
 
+import com.group21.constants.CommonRegex;
 import com.group21.server.models.Column;
 import com.group21.server.models.DataType;
 import com.group21.server.models.DatabaseSite;
@@ -21,10 +22,6 @@ public class SelectParser {
     private static final String SELECT_REGEX_TYPE2 = "^SELECT [a-zA-Z_, ]+ FROM [a-zA-Z_]+;?$";
     private static final String SELECT_REGEX_TYPE3 = "^SELECT \\* FROM [a-zA-Z_]+ WHERE [a-zA-Z_]+ = .+;?$";
     private static final String SELECT_REGEX_TYPE4 = "^SELECT [a-zA-Z_, ]+ FROM [a-zA-Z_]+ WHERE [a-zA-Z_]+ = .+;?$";
-    private static final String INTEGER_REGEX = "^[-]?[0-9]+$";
-    private static final String DOUBLE_REGEX = "^[-]?[0-9]+(\\.[0-9]+)?$";
-    private static final String TEXT_REGEX = "^['\"].*['\"]$";
-
 
     public boolean isValid(String query) {
         int queryType = getQueryType(query);
@@ -71,11 +68,19 @@ public class SelectParser {
             DataType conditionType = columnData.get(columnNameList.indexOf(conditionParameter)).getColumnType();
 
             if (conditionType.equals(DataType.INT)) {
-                conditionValue = RegexUtil.getMatch(conditionValue, INTEGER_REGEX);
+                try {
+                    Integer.parseInt(conditionValue);
+                } catch (Exception e) {
+                    conditionValue = "";
+                }
             } else if (conditionType.equals(DataType.DOUBLE)) {
-                conditionValue = RegexUtil.getMatch(conditionValue, DOUBLE_REGEX);
+                try {
+                    Double.parseDouble(conditionValue);
+                } catch (Exception e) {
+                    conditionValue = "";
+                }
             } else if (conditionType.equals(DataType.TEXT)) {
-                conditionValue = RegexUtil.getMatch(conditionValue, TEXT_REGEX);
+                conditionValue = RegexUtil.getMatch(conditionValue, CommonRegex.TEXT_REGEX);
 
                 if (conditionValue != null) {
                     conditionValue = conditionValue.substring(1, conditionValue.length() - 1);

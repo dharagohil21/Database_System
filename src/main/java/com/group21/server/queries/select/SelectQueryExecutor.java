@@ -64,7 +64,7 @@ public class SelectQueryExecutor {
                 }
 
                 String conditionParameter = selectParser.getConditionParameter(query);
-                String conditionValue = selectParser.getConditionValue(query);
+                String conditionValue = selectParser.getConditionValue(query).replace("'", "");
                 int conditionParameterIndex = allColumnNames.indexOf(conditionParameter);
 
                 for (int i = 0; i < tableRowCount; i++) {
@@ -79,6 +79,7 @@ public class SelectQueryExecutor {
                 }
             }
 
+            System.out.println();
             for (int i = 0; i < selectData.size(); i++) {
                 for (int j = 0; j < selectData.get(i).size(); j++) {
                     if (j == 0 && i > 0) {
@@ -89,6 +90,7 @@ public class SelectQueryExecutor {
                     System.out.print(selectData.get(i).get(j));
                 }
             }
+            System.out.println();
             System.out.println("\n" + (selectData.size() - 1) + " rows returned");
         }
     }
