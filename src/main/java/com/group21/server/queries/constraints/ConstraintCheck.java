@@ -101,6 +101,32 @@ public class ConstraintCheck {
         return false;
     }
 
+    public static boolean checkForeignKeyTable(String tableName) {
+        Map<String, DatabaseSite> gddMap = FileReader.readDistributedDataDictionary();
+        List<Column> columnNameList;
+        gddMap.remove(tableName);
+
+        for (String table : gddMap.keySet()) {
+            DatabaseSite tableDatabaseSite = gddMap.get(table);
+            if (ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
+                if (tableDatabaseSite == DatabaseSite.REMOTE) {
+                    tableDatabaseSite = DatabaseSite.LOCAL;
+                } else {
+                    continue;
+                }
+            }
+            columnNameList = tableDatabaseSite.readMetadata(table);
+            for (Column column : columnNameList) {
+                if (column.getForeignKeyTable().equals(tableName)) {
+                    LOGGER.error("Foreign Key constraint violated for table '{}'", table);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static List<String> checkForeignKeyUniqueIds(List<String> uniqueIds, String tableName, Column column, DatabaseSite databaseSite) {
         List<String> violatedIds = new ArrayList<>();
         List<String> fileLines = databaseSite.readData(tableName);

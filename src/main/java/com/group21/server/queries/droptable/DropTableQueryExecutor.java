@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.group21.configurations.ApplicationConfiguration;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
+import com.group21.server.queries.constraints.ConstraintCheck;
 import com.group21.utils.FileReader;
 import com.group21.utils.FileWriter;
 
@@ -41,6 +42,10 @@ public class DropTableQueryExecutor {
 
                 if (databaseOperationSite == DatabaseSite.REMOTE && ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
                     LOGGER.error("Table '{}' is on LOCAL site & Remote server can not connect to local machine.", tableName);
+                    return;
+                }
+
+                if (ConstraintCheck.checkForeignKeyTable(tableName)) {
                     return;
                 }
 

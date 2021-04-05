@@ -9,8 +9,8 @@ import com.group21.configurations.ApplicationConfiguration;
 import com.group21.server.authentication.Authentication;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.processor.QueryProcessor;
-import com.group21.server.queries.erd.ERDGenerator;
-import com.group21.server.sqlDump.SqlDumpGenerator;
+import com.group21.server.erd.ERDGenerator;
+import com.group21.server.sqldump.SqlDumpGenerator;
 import com.group21.server.transaction.CommitConfiguration;
 import com.group21.server.transaction.TransactionExecutor;
 import com.group21.utils.RemoteDatabaseConnection;
@@ -65,11 +65,11 @@ public class DDBMSClient {
                     command = "sqldump";
                 } else if (userInput.matches("^export erd;?$")) {
                     command = "erd";
-                } else if (userInput.matches("^set auto_commit = (true|false)")) {
+                } else if (userInput.matches("^set auto_commit = (true|false);?")) {
                     command = "set auto_commit";
-                } else if (userInput.equals("commit")) {
+                } else if (userInput.equals("commit") || userInput.equals("commit;")) {
                     command = "commit";
-                } else if (userInput.equals("rollback")) {
+                } else if (userInput.equals("rollback") || userInput.equals("rollback;")) {
                     command = "rollback";
                 } else {
                     command = userInput.trim();
