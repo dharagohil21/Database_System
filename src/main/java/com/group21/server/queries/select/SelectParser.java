@@ -2,14 +2,16 @@ package com.group21.server.queries.select;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.group21.constants.CommonRegex;
 import com.group21.server.models.Column;
 import com.group21.server.models.DataType;
-import com.group21.server.models.TableInfo;
+import com.group21.server.models.DatabaseSite;
 import com.group21.utils.FileReader;
 import com.group21.utils.RegexUtil;
 
@@ -21,10 +23,6 @@ public class SelectParser {
     private static final String SELECT_REGEX_TYPE2 = "^SELECT [a-zA-Z_, ]+ FROM [a-zA-Z_]+;?$";
     private static final String SELECT_REGEX_TYPE3 = "^SELECT \\* FROM [a-zA-Z_]+ WHERE [a-zA-Z_]+ = .+;?$";
     private static final String SELECT_REGEX_TYPE4 = "^SELECT [a-zA-Z_, ]+ FROM [a-zA-Z_]+ WHERE [a-zA-Z_]+ = .+;?$";
-    private static final String INTEGER_REGEX = "^[-]?[0-9]+$";
-    private static final String DOUBLE_REGEX = "^[-]?[0-9]+(\\.[0-9]+)?$";
-    private static final String TEXT_REGEX = "^['\"].*['\"]$";
-
 
     public boolean isValid(String query) {
         int queryType = getQueryType(query);
@@ -34,32 +32,23 @@ public class SelectParser {
             return false;
         }
 
-        boolean invalidTableName = true;
-
         String tableName = getTableName(query);
 
-        List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
+        DatabaseSite databaseSite = getDatabaseSite(tableName);
 
-        for (TableInfo tableInfo : tableInfoList) {
-            if (tableInfo.getTableName().equals(tableName)) {
-                invalidTableName = false;
-                break;
-            }
-        }
-
-        if (invalidTableName) {
+        if (databaseSite == null) {
             LOGGER.error("Table Name '{}' Does not exist ", tableName);
             return false;
         }
 
-        List<Column> columnData = FileReader.readMetadata(tableName);
+        List<Column> columnData = databaseSite.readMetadata(tableName);
         List<String> columnNameList = new ArrayList<>();
         for (Column c : columnData) {
             columnNameList.add(c.getColumnName());
         }
 
         if (queryType == 2 || queryType == 4) {
-            List<String> columnList = getColumns(query);
+            List<String> columnList = getColumns(query, databaseSite);
 
             for (String s : columnList) {
                 if (!columnNameList.contains(s)) {
@@ -80,11 +69,19 @@ public class SelectParser {
             DataType conditionType = columnData.get(columnNameList.indexOf(conditionParameter)).getColumnType();
 
             if (conditionType.equals(DataType.INT)) {
-                conditionValue = RegexUtil.getMatch(conditionValue, INTEGER_REGEX);
+                try {
+                    Integer.parseInt(conditionValue);
+                } catch (Exception e) {
+                    conditionValue = "";
+                }
             } else if (conditionType.equals(DataType.DOUBLE)) {
-                conditionValue = RegexUtil.getMatch(conditionValue, DOUBLE_REGEX);
+                try {
+                    Double.parseDouble(conditionValue);
+                } catch (Exception e) {
+                    conditionValue = "";
+                }
             } else if (conditionType.equals(DataType.TEXT)) {
-                conditionValue = RegexUtil.getMatch(conditionValue, TEXT_REGEX);
+                conditionValue = RegexUtil.getMatch(conditionValue, CommonRegex.TEXT_REGEX);
 
                 if (conditionValue != null) {
                     conditionValue = conditionValue.substring(1, conditionValue.length() - 1);
@@ -114,15 +111,19 @@ public class SelectParser {
         return query.substring(tableNameStartIndex, tableNameEndIndex).trim();
     }
 
+    public DatabaseSite getDatabaseSite(String tableName) {
+        Map<String, DatabaseSite> dataDictionary = FileReader.readDistributedDataDictionary();
+        return dataDictionary.get(tableName);
+    }
 
-    public List<String> getColumns(String query) {
+    public List<String> getColumns(String query, DatabaseSite databaseSite) {
         int columnStartIndex = query.indexOf("SELECT") + 7;
         int columnEndIndex = query.indexOf("FROM", columnStartIndex);
         String column = query.substring(columnStartIndex, columnEndIndex).trim();
         List<String> columnList = new ArrayList<>();
         if (column.equals("*")) {
             String tableName = getTableName(query);
-            List<Column> columnDataList = FileReader.readMetadata(tableName);
+            List<Column> columnDataList = databaseSite.readMetadata(tableName);
             for (Column c : columnDataList) {
                 columnList.add(c.getColumnName());
             }
@@ -134,7 +135,6 @@ public class SelectParser {
         }
         return columnList;
     }
-
 
     public String getConditionParameter(String query) {
         int parameterStartIndex = query.indexOf("WHERE") + 6;

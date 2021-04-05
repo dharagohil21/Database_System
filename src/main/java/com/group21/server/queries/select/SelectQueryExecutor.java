@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.group21.server.models.Column;
+import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
-import com.group21.utils.FileReader;
 
 public class SelectQueryExecutor {
 
@@ -21,12 +21,13 @@ public class SelectQueryExecutor {
         if (isQueryValid) {
             int queryType = selectParser.getQueryType(query);
             String tableName = selectParser.getTableName(query);
-            List<String> columnNames = selectParser.getColumns(query);
+            DatabaseSite databaseSite = selectParser.getDatabaseSite(tableName);
+            List<String> columnNames = selectParser.getColumns(query, databaseSite);
 
             List<List<String>> selectData = new ArrayList<>();
             selectData.add(columnNames);
 
-            List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
+            List<TableInfo> tableInfoList = databaseSite.readLocalDataDictionary();
             List<String> tableNameList = new ArrayList<>();
             for (TableInfo tableInfo : tableInfoList) {
                 tableNameList.add(tableInfo.getTableName());
@@ -37,7 +38,7 @@ public class SelectQueryExecutor {
 
                 List<List<String>> columnDataList = new ArrayList<>();
                 for (String columnName : columnNames) {
-                    List<String> columnData = FileReader.readColumnData(tableName, columnName);
+                    List<String> columnData = databaseSite.readColumnData(tableName, columnName);
                     columnDataList.add(columnData);
                 }
 
@@ -50,7 +51,7 @@ public class SelectQueryExecutor {
                 }
             } else {
                 List<List<String>> columnDataList = new ArrayList<>();
-                List<Column> allColumnMetadataData = FileReader.readMetadata(tableName);
+                List<Column> allColumnMetadataData = databaseSite.readMetadata(tableName);
                 List<String> allColumnNames = new ArrayList<>();
 
                 for (Column c : allColumnMetadataData) {
@@ -58,12 +59,12 @@ public class SelectQueryExecutor {
                 }
 
                 for (String columnName : allColumnNames) {
-                    List<String> columnData = FileReader.readColumnData(tableName, columnName);
+                    List<String> columnData = databaseSite.readColumnData(tableName, columnName);
                     columnDataList.add(columnData);
                 }
 
                 String conditionParameter = selectParser.getConditionParameter(query);
-                String conditionValue = selectParser.getConditionValue(query);
+                String conditionValue = selectParser.getConditionValue(query).replace("'", "");
                 int conditionParameterIndex = allColumnNames.indexOf(conditionParameter);
 
                 for (int i = 0; i < tableRowCount; i++) {
@@ -78,6 +79,7 @@ public class SelectQueryExecutor {
                 }
             }
 
+            System.out.println();
             for (int i = 0; i < selectData.size(); i++) {
                 for (int j = 0; j < selectData.get(i).size(); j++) {
                     if (j == 0 && i > 0) {
@@ -88,6 +90,7 @@ public class SelectQueryExecutor {
                     System.out.print(selectData.get(i).get(j));
                 }
             }
+            System.out.println();
             System.out.println("\n" + (selectData.size() - 1) + " rows returned");
         }
     }
