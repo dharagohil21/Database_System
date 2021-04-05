@@ -152,6 +152,28 @@ public class FileWriter {
         }
     }
 
+    public static void decrementRowCountInLocalDataDictionary(String tableName, int count) {
+        List<TableInfo> tableInfoList = FileReader.readLocalDataDictionary();
+        List<String> tableNameList = new ArrayList<>();
+        for (TableInfo tableInfo1 : tableInfoList) {
+            tableNameList.add(tableInfo1.getTableName());
+        }
+        TableInfo tableInfo = tableInfoList.get(tableNameList.indexOf(tableName));
+        int rows = tableInfo.getNumberOfRows() - count;
+        tableInfo.setNumberOfRows(rows);
+        tableInfoList.set(tableNameList.indexOf(tableName), tableInfo);
+        Path localDDPath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.LOCAL_DATA_DICTIONARY_NAME);
+        String headerRow = "TableName|NumberOfRows|CreatedOn" + ApplicationConfiguration.NEW_LINE;
+        try {
+            Files.write(localDDPath, headerRow.getBytes());
+        } catch (IOException exception) {
+            LOGGER.error("Error occurred while creating data directory.");
+        }
+        for (TableInfo tableInfo2 : tableInfoList) {
+            writeLocalDataDictionary(tableInfo2);
+        }
+    }
+
     public static void deleteTable(String tableName) {
         try {
             Path dataFile = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + tableName + ApplicationConfiguration.DATA_FILE_FORMAT);

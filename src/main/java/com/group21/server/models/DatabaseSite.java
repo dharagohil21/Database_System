@@ -68,6 +68,11 @@ public enum DatabaseSite {
         public void incrementRowCountInLocalDataDictionary(String tableName) {
             FileWriter.incrementRowCountInLocalDataDictionary(tableName);
         }
+
+        @Override
+        public void decrementRowCountInLocalDataDictionary(String tableName, int count) {
+            FileWriter.decrementRowCountInLocalDataDictionary(tableName, count);
+        }
     },
     REMOTE {
         @Override
@@ -122,12 +127,17 @@ public enum DatabaseSite {
 
         @Override
         public List<String> readColumnData(String tableName, String columnName) {
-            return FileReader.readColumnData(tableName, columnName);
+            return RemoteDatabaseReader.readColumnData(tableName, columnName);
         }
 
         @Override
         public void incrementRowCountInLocalDataDictionary(String tableName) {
-            FileWriter.incrementRowCountInLocalDataDictionary(tableName);
+            RemoteDatabaseWriter.incrementRowCountInLocalDataDictionary(tableName);
+        }
+
+        @Override
+        public void decrementRowCountInLocalDataDictionary(String tableName, int count) {
+            RemoteDatabaseWriter.decrementRowCountInLocalDataDictionary(tableName, count);
         }
     };
 
@@ -154,6 +164,8 @@ public enum DatabaseSite {
     public abstract List<String> readColumnData(String tableName, String columnName);
 
     public abstract void incrementRowCountInLocalDataDictionary(String tableName);
+
+    public abstract void decrementRowCountInLocalDataDictionary(String tableName, int count);
 
     public static DatabaseSite from(String siteName) {
         for (DatabaseSite databaseSite : values()) {

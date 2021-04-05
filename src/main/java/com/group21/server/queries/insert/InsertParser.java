@@ -1,5 +1,6 @@
 package com.group21.server.queries.insert;
 
+import com.group21.constants.CommonRegex;
 import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
 import com.group21.server.models.DataType;
@@ -18,10 +19,6 @@ public class InsertParser {
 
     private static final String INSERT_REGEX_TYPE1 = "^INSERT INTO [a-zA-Z_]* \\(.*\\) VALUES \\(.*\\);?$";
     private static final String INSERT_REGEX_TYPE2 = "^INSERT INTO [a-zA-Z_]* VALUES \\(.*\\);?$";
-    private static final String INTEGER_REGEX = "^[-]?[0-9]+$";
-    private static final String DOUBLE_REGEX = "^[-]?[0-9]+(\\.[0-9]+)?$";
-    private static final String TEXT_REGEX = "^['\"].*['\"]$";
-
 
     public boolean isValid(String query) {
         String matchedQueryType1 = RegexUtil.getMatch(query, INSERT_REGEX_TYPE1);
@@ -136,11 +133,19 @@ public class InsertParser {
 
             DataType columnValueDatatype = columnTypeList.get(columnName);
             if (columnValueDatatype.equals(DataType.INT)) {
-                columnValue = RegexUtil.getMatch(columnValue, INTEGER_REGEX);
+                try {
+                    Integer.parseInt(columnValue);
+                } catch (Exception e) {
+                    columnValue = "";
+                }
             } else if (columnValueDatatype.equals(DataType.DOUBLE)) {
-                columnValue = RegexUtil.getMatch(columnValue, DOUBLE_REGEX);
+                try {
+                    Double.parseDouble(columnValue);
+                } catch (Exception e) {
+                    columnValue = "";
+                }
             } else if (columnValueDatatype.equals(DataType.TEXT)) {
-                columnValue = RegexUtil.getMatch(columnValue, TEXT_REGEX);
+                columnValue = RegexUtil.getMatch(columnValue, CommonRegex.TEXT_REGEX);
 
                 if (columnValue != null) {
                     columnValue = columnValue.substring(1, columnValue.length() - 1);
@@ -163,10 +168,14 @@ public class InsertParser {
             } else if (columnValueConstraint.equals(Constraint.FOREIGN_KEY)) {
                 String foreignKeyTable = columnForeignKeyTableList.get(columnName);
                 String foreignKeyColumnName = columnForeignKeyColumnNameList.get(columnName);
-                List<String> foreignKeyValueList = databaseSite.readColumnData(foreignKeyTable, foreignKeyColumnName);
+
+                Map<String, DatabaseSite> gddMap = FileReader.readDistributedDataDictionary();
+                DatabaseSite foreignKeyTableDatabaseSite = gddMap.get(foreignKeyTable);
+
+                List<String> foreignKeyValueList = foreignKeyTableDatabaseSite.readColumnData(foreignKeyTable, foreignKeyColumnName);
 
                 if (!foreignKeyValueList.contains(columnValue)) {
-                    LOGGER.error("Foreign Key Constraint Violated");
+                    LOGGER.error("Foreign Key Constraint Violated! Foreign Key '{}' Does not exist in '{}'", columnValue, foreignKeyTable);
                     return false;
                 }
             }

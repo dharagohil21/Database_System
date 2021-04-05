@@ -143,7 +143,7 @@ public class UpdateParser {
                         nonConditionalLines.add(String.join(ApplicationConfiguration.DELIMITER, columnList));
                     }
                 }
-                int changedRows = fileLines.size() - conditionalFileLines.size();
+                int changedRows = conditionalFileLines.size();
 
                 conditionalFileLines.addAll(nonConditionalLines);
                 List<String> columnNames = columns.stream().map(Column::getColumnName).collect(Collectors.toList());

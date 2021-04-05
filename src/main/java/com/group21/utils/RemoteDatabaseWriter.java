@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
@@ -69,19 +70,7 @@ public class RemoteDatabaseWriter {
     public static void writeLocalDataDictionary(TableInfo tableInfo) {
         List<TableInfo> tableInfoList = RemoteDatabaseReader.readLocalDataDictionary();
         tableInfoList.add(tableInfo);
-
-        String headerRow = "TableName|NumberOfRows|CreatedOn" + ApplicationConfiguration.NEW_LINE;
-        StringBuilder tableInfoDetails = new StringBuilder(headerRow);
-        for (TableInfo tableInfoInstance : tableInfoList) {
-            StringJoiner tableInfoJoiner = new StringJoiner(ApplicationConfiguration.DELIMITER);
-            tableInfoJoiner.add(tableInfoInstance.getTableName());
-            tableInfoJoiner.add(String.valueOf(tableInfoInstance.getNumberOfRows()));
-            tableInfoJoiner.add(String.valueOf(tableInfoInstance.getCreatedOn()));
-
-            tableInfoDetails.append(tableInfoJoiner.toString()).append(ApplicationConfiguration.NEW_LINE);
-        }
-
-        writeFile(ApplicationConfiguration.LOCAL_DATA_DICTIONARY_NAME, tableInfoDetails.toString());
+        writeFile(ApplicationConfiguration.LOCAL_DATA_DICTIONARY_NAME, FileWriter.generateLocalDataDictionaryContent(tableInfoList));
     }
 
     public static void writeData(String tableName, List<String> columnData) {
@@ -136,5 +125,33 @@ public class RemoteDatabaseWriter {
         } catch (Exception exception) {
             LOGGER.error("Error occurred while deleting table {} file from remote.", tableName);
         }
+    }
+
+    public static void incrementRowCountInLocalDataDictionary(String tableName) {
+        List<TableInfo> tableInfoList = RemoteDatabaseReader.readLocalDataDictionary();
+        List<String> tableNameList = new ArrayList<>();
+        for (TableInfo tableInfo : tableInfoList) {
+            tableNameList.add(tableInfo.getTableName());
+        }
+        TableInfo tableInfo = tableInfoList.get(tableNameList.indexOf(tableName));
+        int rows = tableInfo.getNumberOfRows() + 1;
+        tableInfo.setNumberOfRows(rows);
+        tableInfoList.set(tableNameList.indexOf(tableName), tableInfo);
+
+        writeFile(ApplicationConfiguration.LOCAL_DATA_DICTIONARY_NAME, FileWriter.generateLocalDataDictionaryContent(tableInfoList));
+    }
+
+    public static void decrementRowCountInLocalDataDictionary(String tableName, int count) {
+        List<TableInfo> tableInfoList = RemoteDatabaseReader.readLocalDataDictionary();
+        List<String> tableNameList = new ArrayList<>();
+        for (TableInfo tableInfo : tableInfoList) {
+            tableNameList.add(tableInfo.getTableName());
+        }
+        TableInfo tableInfo = tableInfoList.get(tableNameList.indexOf(tableName));
+        int rows = tableInfo.getNumberOfRows() - count;
+        tableInfo.setNumberOfRows(rows);
+        tableInfoList.set(tableNameList.indexOf(tableName), tableInfo);
+
+        writeFile(ApplicationConfiguration.LOCAL_DATA_DICTIONARY_NAME, FileWriter.generateLocalDataDictionaryContent(tableInfoList));
     }
 }
