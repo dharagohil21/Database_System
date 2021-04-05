@@ -85,7 +85,10 @@ public class FileReader {
     public static Map<String, DatabaseSite> readDistributedDataDictionary() {
         Map<String, DatabaseSite> tableInfoMap = new LinkedHashMap<>();
         try {
-            RemoteDatabaseReader.syncDistributedDataDictionary();
+            if (ApplicationConfiguration.CURRENT_SITE == DatabaseSite.LOCAL) {
+                // This is done only for local as remote site can not access local machine
+                RemoteDatabaseReader.syncDistributedDataDictionary();
+            }
             Path localDDFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.DISTRIBUTED_DATA_DICTIONARY_NAME);
             List<String> fileLines = Files.readAllLines(localDDFilePath);
             fileLines.remove(0);

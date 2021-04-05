@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.models.DatabaseSite;
 import com.group21.utils.RemoteDatabaseReader;
 
 public class DDBMSSetup {
@@ -46,7 +47,10 @@ public class DDBMSSetup {
                 Files.createFile(transactionFilePath);
             }
 
-            RemoteDatabaseReader.syncDistributedDataDictionary();
+            if (ApplicationConfiguration.CURRENT_SITE == DatabaseSite.LOCAL) {
+                // This is done only for local as remote site can not access local machine
+                RemoteDatabaseReader.syncDistributedDataDictionary();
+            }
         } catch (IOException exception) {
             LOGGER.error("Error occurred while creating data directory.");
         }

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.group21.configurations.ApplicationConfiguration;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
 import com.group21.utils.FileReader;
@@ -29,14 +30,24 @@ public class UpdateQueryExecutor {
             if (gddMap.containsKey(tableName)) {
                 DatabaseSite databaseSite = gddMap.get(tableName);
 
-                List<TableInfo> tableInfoList = databaseSite.readLocalDataDictionary();
+                DatabaseSite databaseOperationSite = DatabaseSite.LOCAL;
+                if (databaseSite != ApplicationConfiguration.CURRENT_SITE) {
+                    databaseOperationSite = DatabaseSite.REMOTE;
+                }
+
+                if (databaseOperationSite == DatabaseSite.REMOTE && ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
+                    LOGGER.error("Table '{}' is on LOCAL site & Remote server can not connect to local machine.", tableName);
+                    return;
+                }
+
+                List<TableInfo> tableInfoList = databaseOperationSite.readLocalDataDictionary();
 
                 for (TableInfo tableInfo : tableInfoList) {
                     if (tableInfo.getTableName().equals(tableName)) {
                         if (updateQueryParser.isWhereConditionExists(query)) {
-                            updateQueryParser.updateTableWhere(tableInfo, query, databaseSite, isAutoCommit);
+                            updateQueryParser.updateTableWhere(tableInfo, query, databaseOperationSite, isAutoCommit);
                         } else {
-                            updateQueryParser.updateTable(tableInfo, query, databaseSite, isAutoCommit);
+                            updateQueryParser.updateTable(tableInfo, query, databaseOperationSite, isAutoCommit);
                         }
                     }
                 }

@@ -8,7 +8,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.group21.configurations.ApplicationConfiguration;
 import com.group21.server.models.Column;
+import com.group21.server.models.Constraint;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
 import com.group21.utils.FileReader;
@@ -31,6 +33,16 @@ public class CreateTableQueryExecutor {
             String tableName = createTableParser.getTableName(query);
             DatabaseSite databaseSite = DatabaseSite.from(createTableParser.getDatabaseSite(query));
 
+            DatabaseSite databaseOperationSite = DatabaseSite.LOCAL;
+            if (databaseSite != ApplicationConfiguration.CURRENT_SITE) {
+                databaseOperationSite = DatabaseSite.REMOTE;
+            }
+
+            if (databaseOperationSite == DatabaseSite.REMOTE && ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
+                LOGGER.error("Table '{}' is on LOCAL site & Remote server can not connect to local machine.", tableName);
+                return;
+            }
+
             List<Column> columns = createTableParser.getColumns(query);
 
             Map<String, DatabaseSite> tableInfoMap = FileReader.readDistributedDataDictionary();
@@ -41,17 +53,24 @@ public class CreateTableQueryExecutor {
                 return;
             }
 
-            databaseSite.writeMetadata(tableName, columns);
+            for (Column column : columns) {
+                if (column.getConstraint() == Constraint.FOREIGN_KEY && !tableNameList.contains(column.getForeignKeyTable())) {
+                    LOGGER.error("Foreign Key Table '{}' does not exist.", column.getForeignKeyTable());
+                    return;
+                }
+            }
+
+            databaseOperationSite.writeMetadata(tableName, columns);
 
             List<String> tableData = columns.stream().map(Column::getColumnName).collect(Collectors.toList());
-            databaseSite.writeData(tableName, tableData);
+            databaseOperationSite.writeData(tableName, tableData);
 
             TableInfo tableInfo = new TableInfo();
             tableInfo.setTableName(tableName);
             tableInfo.setNumberOfRows(0);
             tableInfo.setCreatedOn(System.currentTimeMillis());
 
-            databaseSite.writeLocalDataDictionary(tableInfo);
+            databaseOperationSite.writeLocalDataDictionary(tableInfo);
 
             FileWriter.writeDistributedDataDictionary(tableName, databaseSite);
 

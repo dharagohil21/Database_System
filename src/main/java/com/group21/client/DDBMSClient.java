@@ -5,13 +5,16 @@ import java.util.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.group21.configurations.ApplicationConfiguration;
 import com.group21.server.authentication.Authentication;
+import com.group21.server.models.DatabaseSite;
 import com.group21.server.processor.QueryProcessor;
 import com.group21.server.queries.erd.ERDGenerator;
 import com.group21.server.sqlDump.SqlDumpGenerator;
 import com.group21.server.transaction.CommitConfiguration;
 import com.group21.server.transaction.TransactionExecutor;
 import com.group21.utils.RemoteDatabaseConnection;
+import com.group21.utils.RemoteDatabaseReader;
 import com.group21.utils.RemoteDatabaseWriter;
 
 public class DDBMSClient {
@@ -62,7 +65,7 @@ public class DDBMSClient {
                     command = "sqldump";
                 } else if (userInput.matches("^export erd;?$")) {
                     command = "erd";
-                }  else if (userInput.matches("^set auto_commit = (true|false)")) {
+                } else if (userInput.matches("^set auto_commit = (true|false)")) {
                     command = "set auto_commit";
                 } else if (userInput.equals("commit")) {
                     command = "commit";
@@ -74,6 +77,10 @@ public class DDBMSClient {
 
                 switch (command) {
                     case "":
+                        if (ApplicationConfiguration.CURRENT_SITE == DatabaseSite.LOCAL) {
+                            // This is done only for local as remote site can not access local machine
+                            RemoteDatabaseReader.syncDistributedDataDictionary();
+                        }
                         break;
                     case "help":
                         LOGGER.info("Below are some available options:");
@@ -118,7 +125,10 @@ public class DDBMSClient {
                         break;
                     default:
                         QueryProcessor.process(command, commitConfiguration.isAutoCommitValue());
-                        RemoteDatabaseWriter.syncDistributedDataDictionary();
+                        if (ApplicationConfiguration.CURRENT_SITE == DatabaseSite.LOCAL) {
+                            // This is done only for local as remote site can not access local machine
+                            RemoteDatabaseWriter.syncDistributedDataDictionary();
+                        }
                         break;
                 }
                 LOGGER.info("");

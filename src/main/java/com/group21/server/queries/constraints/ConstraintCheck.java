@@ -79,6 +79,13 @@ public class ConstraintCheck {
         //Dict for foreign key check w.r.t tables
         for (String table : gddMap.keySet()) {
             DatabaseSite tableDatabaseSite = gddMap.get(table);
+            if (ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
+                if (tableDatabaseSite == DatabaseSite.REMOTE) {
+                    tableDatabaseSite = DatabaseSite.LOCAL;
+                } else {
+                    continue;
+                }
+            }
             columnNameList = tableDatabaseSite.readMetadata(table);
             for (Column column : columnNameList) {
                 if (column.getForeignKeyTable().equals(tableName)) {

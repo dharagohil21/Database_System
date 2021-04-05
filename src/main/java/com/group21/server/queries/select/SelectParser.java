@@ -8,6 +8,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.group21.configurations.ApplicationConfiguration;
 import com.group21.constants.CommonRegex;
 import com.group21.server.models.Column;
 import com.group21.server.models.DataType;
@@ -37,7 +38,6 @@ public class SelectParser {
         DatabaseSite databaseSite = getDatabaseSite(tableName);
 
         if (databaseSite == null) {
-            LOGGER.error("Table Name '{}' Does not exist ", tableName);
             return false;
         }
 
@@ -113,7 +113,23 @@ public class SelectParser {
 
     public DatabaseSite getDatabaseSite(String tableName) {
         Map<String, DatabaseSite> dataDictionary = FileReader.readDistributedDataDictionary();
-        return dataDictionary.get(tableName);
+        DatabaseSite databaseSite = dataDictionary.get(tableName);
+
+        if (databaseSite != null) {
+            DatabaseSite databaseOperationSite = DatabaseSite.LOCAL;
+            if (databaseSite != ApplicationConfiguration.CURRENT_SITE) {
+                databaseOperationSite = DatabaseSite.REMOTE;
+            }
+
+            if (databaseOperationSite == DatabaseSite.REMOTE && ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
+                LOGGER.error("Table '{}' is on LOCAL site & Remote server can not connect to local machine.", tableName);
+                return null;
+            }
+            return databaseOperationSite;
+        } else {
+            LOGGER.error("Table Name '{}' Does not exist ", tableName);
+            return null;
+        }
     }
 
     public List<String> getColumns(String query, DatabaseSite databaseSite) {
