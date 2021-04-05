@@ -1,18 +1,19 @@
 package com.group21.server.queries.select;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.group21.constants.CommonRegex;
 import com.group21.server.models.Column;
 import com.group21.server.models.DataType;
 import com.group21.server.models.DatabaseSite;
 import com.group21.utils.FileReader;
 import com.group21.utils.RegexUtil;
-import org.apache.logging.log4j.util.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class SelectParser {
 
@@ -134,7 +135,6 @@ public class SelectParser {
         }
         return columnList;
     }
-
 
     public String getConditionParameter(String query) {
         int parameterStartIndex = query.indexOf("WHERE") + 6;

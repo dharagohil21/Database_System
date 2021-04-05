@@ -1,11 +1,11 @@
 package com.group21.server.queries.select;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.group21.server.models.Column;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SelectQueryExecutor {
 
