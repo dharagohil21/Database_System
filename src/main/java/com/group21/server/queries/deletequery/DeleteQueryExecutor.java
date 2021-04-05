@@ -20,7 +20,7 @@ public class DeleteQueryExecutor {
         this.deleteQueryParser = new DeleteParser();
     }
 
-    public void execute(String query) {
+    public void execute(String query, boolean isAutoCommit) {
         boolean isValid = deleteQueryParser.isValid(query);
         if (isValid) {
             String tableName = deleteQueryParser.getTableName(query);
@@ -35,9 +35,9 @@ public class DeleteQueryExecutor {
                 for (TableInfo tableInfo : tableInfoList) {
                     if (tableInfo.getTableName().equals(tableName)) {
                         if (deleteQueryParser.isWhereConditionExists(query)) {
-                            deleteQueryParser.deleteTableWhere(tableInfo, query, databaseSite);
+                            deleteQueryParser.deleteTableWhere(tableInfo, query, databaseSite, isAutoCommit);
                         } else {
-                            deleteQueryParser.deleteTable(tableInfo, databaseSite);
+                            deleteQueryParser.deleteTable(tableInfo, query, databaseSite, isAutoCommit);
                         }
                     }
                 }

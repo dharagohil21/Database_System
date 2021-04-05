@@ -19,7 +19,7 @@ public class UpdateQueryExecutor {
         this.updateQueryParser = new UpdateParser();
     }
 
-    public void execute(String query) {
+    public void execute(String query, boolean isAutoCommit) {
         boolean isValid = updateQueryParser.isValid(query);
         if (isValid) {
             String tableName = updateQueryParser.getTableName(query);
@@ -34,9 +34,9 @@ public class UpdateQueryExecutor {
                 for (TableInfo tableInfo : tableInfoList) {
                     if (tableInfo.getTableName().equals(tableName)) {
                         if (updateQueryParser.isWhereConditionExists(query)) {
-                            updateQueryParser.updateTableWhere(tableInfo, query, databaseSite);
+                            updateQueryParser.updateTableWhere(tableInfo, query, databaseSite, isAutoCommit);
                         } else {
-                            updateQueryParser.updateTable(tableInfo, query, databaseSite);
+                            updateQueryParser.updateTable(tableInfo, query, databaseSite, isAutoCommit);
                         }
                     }
                 }
