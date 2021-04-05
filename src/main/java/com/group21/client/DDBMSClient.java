@@ -118,9 +118,9 @@ public class DDBMSClient {
                         break;
                     default:
                         QueryProcessor.process(command, commitConfiguration.isAutoCommitValue());
-                        RemoteDatabaseWriter.syncDistributedDataDictionary();
                         break;
                 }
+                RemoteDatabaseWriter.syncDistributedDataDictionary();
                 LOGGER.info("");
             } catch (Exception e) {
                 LOGGER.error("Error occurred while execution : ", e);

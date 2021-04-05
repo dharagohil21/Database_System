@@ -1,9 +1,12 @@
 package com.group21.configurations;
 
+import com.group21.server.models.DatabaseSite;
+
 public class ApplicationConfiguration {
     private ApplicationConfiguration() {
     }
 
+    public static final DatabaseSite CURRENT_SITE = DatabaseSite.LOCAL;
     public static final String DATA_FILE_FORMAT = ".dat";
     public static final String METADATA_FILE_FORMAT = ".metadata";
     public static final String DELIMITER = "|";

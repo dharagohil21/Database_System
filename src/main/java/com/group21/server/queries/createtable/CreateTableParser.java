@@ -7,6 +7,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.group21.configurations.ApplicationConfiguration;
 import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
 import com.group21.server.models.DataType;
@@ -75,7 +76,7 @@ public class CreateTableParser {
     public String getDatabaseSite(String query) {
         int indexOfNode = query.indexOf("NODE");
         if (indexOfNode == -1) {
-            return "LOCAL";
+            return ApplicationConfiguration.CURRENT_SITE.name();
         }
 
         int indexOfSpaceAfterNode = query.indexOf(' ', indexOfNode + 1);
