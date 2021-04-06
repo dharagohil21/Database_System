@@ -11,14 +11,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
-import com.group21.constants.CommonRegex;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
 import com.group21.server.models.DataType;
@@ -54,6 +52,7 @@ public class FileReader {
             }
         } catch (URISyntaxException | IOException exception) {
             LOGGER.error("Error occurred while reading authentication file.");
+            EventLogger.error(exception.getMessage());
         }
         return authenticationMap;
     }
@@ -77,6 +76,7 @@ public class FileReader {
             }
         } catch (IOException exception) {
             LOGGER.error("Error occurred while reading local data dictionary.");
+            EventLogger.error(exception.getMessage());
         }
         return tableInfoList;
     }
@@ -100,6 +100,7 @@ public class FileReader {
             }
         } catch (IOException exception) {
             LOGGER.error("Error occurred while reading distributed data dictionary.");
+            EventLogger.error(exception.getMessage());
         }
         return tableInfoMap;
     }
@@ -111,7 +112,7 @@ public class FileReader {
         try {
             fileLines = Files.readAllLines(localDataFilePath);
         } catch (IOException exception) {
-            exception.printStackTrace();
+            EventLogger.error(exception.getMessage());
         }
         return fileLines;
     }
@@ -131,6 +132,7 @@ public class FileReader {
             }
         } catch (IOException e) {
             LOGGER.error("Error occurred while reading column name meta data");
+            EventLogger.error(e.getMessage());
         }
         return columnNames;
     }
@@ -156,6 +158,7 @@ public class FileReader {
             }
         } catch (IOException exception) {
             LOGGER.error("Error occurred while reading metadata.");
+            EventLogger.error(exception.getMessage());
         }
         return columnInfoList;
     }
@@ -186,6 +189,7 @@ public class FileReader {
 
         } catch (IOException exception) {
             LOGGER.error("Error occurred while reading column data.");
+            EventLogger.error(exception.getMessage());
         }
         return columnDataList;
     }
@@ -197,6 +201,7 @@ public class FileReader {
             queries = Files.readAllLines(transactionFile);
         } catch (IOException exception) {
             LOGGER.error("Error occurred while writing to distributed data dictionary.");
+            EventLogger.error(exception.getMessage());
         }
         return queries;
     }

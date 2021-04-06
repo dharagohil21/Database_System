@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.processor.QueryProcessor;
 import com.group21.utils.FileReader;
 
@@ -30,16 +31,18 @@ public class TransactionExecutor {
         }
         try {
             Files.write(transactionFile, "".getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (IOException ioException) {
+        } catch (IOException e) {
             LOGGER.info("Error occurred while truncating transaction file.");
+            EventLogger.error(e.getMessage());
         }
     }
 
     public static void rollbackTransaction() {
         try {
             Files.write(transactionFile, "".getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (IOException ioException) {
+        } catch (IOException e) {
             LOGGER.info("Error occurred while truncating transaction file.");
+            EventLogger.error(e.getMessage());
         }
     }
 }

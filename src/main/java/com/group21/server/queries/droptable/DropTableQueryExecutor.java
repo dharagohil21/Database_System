@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
 import com.group21.server.queries.constraints.ConstraintCheck;
@@ -58,6 +59,8 @@ public class DropTableQueryExecutor {
                 FileWriter.writeFile(ApplicationConfiguration.DISTRIBUTED_DATA_DICTIONARY_NAME, updatedDistributedDictionaryContent);
 
                 LOGGER.info("Table '{}' deleted Successfully.", tableName);
+
+                EventLogger.log("Table '" + tableName + "' deleted Successfully.");
             } else {
                 LOGGER.info("Table '{}' does not exist in database!", tableName);
             }

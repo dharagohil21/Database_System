@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.Column;
 import com.group21.server.models.Constraint;
 import com.group21.server.models.DataType;
@@ -46,9 +47,11 @@ public class RemoteDatabaseReader {
         } catch (SftpException exception) {
             if (exception.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
                 LOGGER.error("Error occurred while reading file {} from remote server.", fileName);
+                EventLogger.error(exception.getMessage());
             }
         } catch (Exception exception) {
             LOGGER.error("Error occurred while reading file {} from remote server.", fileName);
+            EventLogger.error(exception.getMessage());
         }
         return fileLines;
     }
@@ -81,6 +84,7 @@ public class RemoteDatabaseReader {
             Files.deleteIfExists(tempFile);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while reading local data dictionary from remote server");
+            EventLogger.error(exception.getMessage());
         }
 
         return tableInfoList;
@@ -98,9 +102,11 @@ public class RemoteDatabaseReader {
         } catch (SftpException exception) {
             if (exception.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) {
                 LOGGER.error("Error occurred while reading distributed data dictionary from remote server");
+                EventLogger.error(exception.getMessage());
             }
         } catch (Exception exception) {
             LOGGER.error("Error occurred while reading distributed data dictionary from remote server");
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -118,6 +124,7 @@ public class RemoteDatabaseReader {
             Files.deleteIfExists(tempFile);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while reading metadata.");
+            EventLogger.error(exception.getMessage());
         }
         return fileLines;
     }
@@ -152,6 +159,7 @@ public class RemoteDatabaseReader {
             Files.deleteIfExists(tempFile);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while reading metadata.");
+            EventLogger.error(exception.getMessage());
         }
         return columnInfoList;
     }
@@ -178,6 +186,7 @@ public class RemoteDatabaseReader {
             Files.deleteIfExists(tempFile);
         } catch (Exception e) {
             LOGGER.error("Error occurred while reading column name meta data");
+            EventLogger.error(e.getMessage());
         }
         return columnNames;
     }
@@ -215,6 +224,7 @@ public class RemoteDatabaseReader {
             Files.deleteIfExists(tempFile);
         } catch (IOException | SftpException exception) {
             LOGGER.error("Error occurred while reading column data.");
+            EventLogger.error(exception.getMessage());
         }
         return columnDataList;
     }

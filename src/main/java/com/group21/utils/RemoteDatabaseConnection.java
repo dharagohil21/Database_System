@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
@@ -35,6 +36,7 @@ public class RemoteDatabaseConnection {
             return session;
         } catch (JSchException e) {
             LOGGER.error("Error occurred while connecting to remote database.");
+            EventLogger.error(e.getMessage());
         }
         return null;
     }
@@ -55,6 +57,7 @@ public class RemoteDatabaseConnection {
                 sftpChannel = (ChannelSftp) channel;
             } catch (JSchException exception) {
                 LOGGER.error("Error while creating sftp channel.");
+                EventLogger.error(exception.getMessage());
             }
         }
         return sftpChannel;

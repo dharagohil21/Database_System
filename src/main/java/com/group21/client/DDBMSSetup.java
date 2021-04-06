@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.DatabaseSite;
 import com.group21.utils.RemoteDatabaseReader;
 
@@ -24,6 +25,10 @@ public class DDBMSSetup {
         Path localDDPath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.LOCAL_DATA_DICTIONARY_NAME);
         Path distributedDDPath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.DISTRIBUTED_DATA_DICTIONARY_NAME);
         Path transactionFilePath = Paths.get(ApplicationConfiguration.DATA_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.TRANSACTION_FILE_NAME);
+
+        Path generalLogFilePath = Paths.get(ApplicationConfiguration.LOG_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.GENERAL_LOG_FILE_NAME);
+        Path eventLogFilePath = Paths.get(ApplicationConfiguration.LOG_DIRECTORY + ApplicationConfiguration.FILE_SEPARATOR + ApplicationConfiguration.EVENT_LOG_FILE_NAME);
+
         try {
             if (Files.notExists(dataDirectoryPath)) {
                 Files.createDirectory(dataDirectoryPath);
@@ -47,12 +52,21 @@ public class DDBMSSetup {
                 Files.createFile(transactionFilePath);
             }
 
+            if (Files.notExists(generalLogFilePath)) {
+                Files.createFile(generalLogFilePath);
+            }
+
+            if (Files.notExists(eventLogFilePath)) {
+                Files.createFile(eventLogFilePath);
+            }
+
             if (ApplicationConfiguration.CURRENT_SITE == DatabaseSite.LOCAL) {
                 // This is done only for local as remote site can not access local machine
                 RemoteDatabaseReader.syncDistributedDataDictionary();
             }
         } catch (IOException exception) {
             LOGGER.error("Error occurred while creating data directory.");
+            EventLogger.error(exception.getMessage());
         }
     }
 }

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.Column;
 import com.group21.server.models.TableInfo;
 import com.jcraft.jsch.ChannelSftp;
@@ -41,6 +42,7 @@ public class RemoteDatabaseWriter {
             Files.deleteIfExists(tempFile);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while writing file {} to remote server.", fileName);
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -100,6 +102,7 @@ public class RemoteDatabaseWriter {
             writeFile(ApplicationConfiguration.DISTRIBUTED_DATA_DICTIONARY_NAME, gddContent);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while updating distributed data dictionary to remote.");
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -113,6 +116,7 @@ public class RemoteDatabaseWriter {
             sftpChannel.rm(metadataFile);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while deleting table {} files from remote.", tableName);
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -124,6 +128,7 @@ public class RemoteDatabaseWriter {
             sftpChannel.rm(dataFile);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while deleting table {} file from remote.", tableName);
+            EventLogger.error(exception.getMessage());
         }
     }
 

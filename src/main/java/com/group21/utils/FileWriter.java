@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.group21.configurations.ApplicationConfiguration;
+import com.group21.server.logger.EventLogger;
 import com.group21.server.models.Column;
 import com.group21.server.models.DatabaseSite;
 import com.group21.server.models.TableInfo;
@@ -37,6 +38,7 @@ public class FileWriter {
             Files.write(filePath, fileContent.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while writing file {}.", fileName);
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -70,6 +72,7 @@ public class FileWriter {
             Files.write(metadataFilePath, tableMetadata.toString().getBytes());
         } catch (IOException exception) {
             LOGGER.error("Error occurred while storing table {} metadata.", tableName);
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -94,6 +97,7 @@ public class FileWriter {
             Files.write(dataFilePath, tableData.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException exception) {
             LOGGER.error("Error occurred while storing data in table {}.", tableName);
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -111,6 +115,7 @@ public class FileWriter {
             Files.write(localDDFilePath, tableInfoDetails.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException exception) {
             LOGGER.error("Error occurred while writing to local data dictionary.");
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -127,6 +132,7 @@ public class FileWriter {
             Files.write(gddFilePath, tableInfoDetails.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException exception) {
             LOGGER.error("Error occurred while writing to distributed data dictionary.");
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -146,6 +152,7 @@ public class FileWriter {
             Files.write(localDDPath, headerRow.getBytes());
         } catch (IOException exception) {
             LOGGER.error("Error occurred while creating data directory.");
+            EventLogger.error(exception.getMessage());
         }
         for (TableInfo tableInfo2 : tableInfoList) {
             writeLocalDataDictionary(tableInfo2);
@@ -168,6 +175,7 @@ public class FileWriter {
             Files.write(localDDPath, headerRow.getBytes());
         } catch (IOException exception) {
             LOGGER.error("Error occurred while creating data directory.");
+            EventLogger.error(exception.getMessage());
         }
         for (TableInfo tableInfo2 : tableInfoList) {
             writeLocalDataDictionary(tableInfo2);
@@ -183,6 +191,7 @@ public class FileWriter {
             Files.deleteIfExists(metadataFile);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while deleting table {} files.", tableName);
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -193,6 +202,7 @@ public class FileWriter {
             Files.deleteIfExists(dataFile);
         } catch (Exception exception) {
             LOGGER.error("Error occurred while deleting table {} file.", tableName);
+            EventLogger.error(exception.getMessage());
         }
     }
 
@@ -230,6 +240,7 @@ public class FileWriter {
             Files.write(transactionFile, fileContent.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException exception) {
             LOGGER.error("Error occurred while writing to distributed data dictionary.");
+            EventLogger.error(exception.getMessage());
         }
     }
 }
