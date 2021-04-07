@@ -40,7 +40,7 @@ public class CreateTableQueryExecutor {
             }
 
             if (databaseOperationSite == DatabaseSite.REMOTE && ApplicationConfiguration.CURRENT_SITE == DatabaseSite.REMOTE) {
-                LOGGER.error("Table '{}' is on LOCAL site & Remote server can not connect to local machine.", tableName);
+                LOGGER.error("Table '{}' can not be create on LOCAL site as Remote server can not connect to local machine.", tableName);
                 return;
             }
 

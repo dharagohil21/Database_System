@@ -29,7 +29,7 @@ public class SelectParser {
         int queryType = getQueryType(query);
 
         if (queryType == 0) {
-            LOGGER.error("Syntax error in provided insert into table query.");
+            LOGGER.error("Syntax error in provided select table query.");
             return false;
         }
 
